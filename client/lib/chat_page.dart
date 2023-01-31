@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 
 class ChatPage extends StatefulWidget {
+  const ChatPage({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return ChatPageState();
@@ -35,7 +37,7 @@ class ChatPageState extends State<ChatPage> {
     //function to connect
     try {
       channel = IOWebSocketChannel.connect(
-          "ws://192.168.82.149:6060/$myid"); //channel IP : Port
+          "ws://192.168.173.149:6060/$myid"); //channel IP : Port
       channel.stream.listen(
         (message) {
           print(message);
