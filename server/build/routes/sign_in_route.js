@@ -26,11 +26,11 @@ router.post("/auth/sign-in", (req, res) => __awaiter(void 0, void 0, void 0, fun
         let user = yield user_model_1.default.findOne({ username });
         let token;
         if (user) {
-            console.log(yield new password_hash_1.Password().validate(password, user.password));
-            console.log(password + "=" + user.password);
+            // console.log(await new Password().validate(password, user!.password));
+            // console.log(password + "=" + user.password);
             if (yield new password_hash_1.Password().validate(password, user.password)) {
                 token = new auth_token_1.Token().generate(user._id);
-                console.log(token + user._id);
+                // console.log(token + user._id);
                 res.status(200).json({ user: user, token: token });
             }
             else {
@@ -51,7 +51,6 @@ router.post("/auth/sign-in", (req, res) => __awaiter(void 0, void 0, void 0, fun
 router.get("/auth/token", authentication_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         var user = yield user_model_1.default.findById(req.userID);
-        console.log(user);
         res.status(200).json(user);
     }
     catch (error) {

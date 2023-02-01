@@ -1,3 +1,4 @@
+import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:client/routes/router.gr.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,10 @@ void main() {
       providers: [
         ChangeNotifierProvider(
           create: (_) => UserProvider(),
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ChatProvider(),
+        ),
       ],
       child: const MyApp(),
     ),

@@ -1,18 +1,23 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:client/provider/stream_provider.dart';
+import 'package:client/provider/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
 import 'package:web_socket_channel/io.dart';
 
 import 'package:client/pages/chat/chat_view_model.dart';
 
 class ChatPage extends StatefulWidget {
-  String myid;
+  IOWebSocketChannel channel;
   String recieverid;
   ChatPage({
     Key? key,
-    required this.myid,
+    required this.channel,
     required this.recieverid,
   }) : super(key: key);
 
@@ -21,7 +26,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  late IOWebSocketChannel channel; //channel varaible for websocket
+  late IOWebSocketChannel channel =
+      widget.channel; //channel varaible for websocket
   late bool connected; // boolean value to track connection status
 
   // String myid = "222";
@@ -36,77 +42,53 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
-    connected = false;
     msgtext.text = "";
-    channelconnect();
+    listenToMessages();
+    // channelconnect();
     super.initState();
   }
 
-  channelconnect() {
-    //function to connect
+  void listenToMessages() {
+    late StreamController<String> streamController =
+        Provider.of<ChatProvider>(context, listen: false).streamController;
     try {
-      channel = IOWebSocketChannel.connect(
-          "ws://192.168.173.149:3000/${widget.myid}"); //channel IP : Port
-      channel.stream.listen(
-        (message) {
-          print(message);
-          setState(() {
-            if (message == "connected") {
-              connected = true;
-              setState(() {});
-              print("Connection establised.");
-            } else if (message == "send:success") {
-              print("Message send success");
-              setState(() {
-                msgtext.text = "";
-              });
-            } else if (message == "send:error") {
-              print("Message send error");
-            } else if (message.substring(0, 6) == "{'cmd'") {
-              print("Message data");
-              message = message.replaceAll(RegExp("'"), '"');
-              var jsondata = json.decode(message);
+      streamController.stream.listen((event) {
+        log(event);
+        if (event.substring(0, 6) == "{'cmd'") {
+          print("Message data anallo");
+          event = event.replaceAll(RegExp("'"), '"');
+          var jsondata = json.decode(event);
 
-              msglist.add(MessageData(
-                //on message recieve, add data to model
-                msgtext: jsondata["msgtext"],
-                userid: jsondata["userid"],
-                isme: false,
-              ));
-              setState(() {
-                //update UI after adding data to message model
-              });
-            }
-          });
-        },
-        onDone: () {
-          //if WebSocket is disconnected
-          print("Web socket is closed");
+          msglist.add(MessageData(
+            //on event recieve, add data to model
+            msgtext: jsondata["msgtext"],
+            userid: jsondata["userid"],
+            isme: false,
+          ));
           setState(() {
-            connected = false;
+            //update UI after adding data to event model
           });
-        },
-        onError: (error) {
-          print(error.toString());
-        },
-      );
-    } catch (_) {
-      print("error on connecting to websocket.");
+        }
+      });
+    } catch (e) {
+      print(e);
     }
   }
 
   Future<void> sendmsg(String sendmsg, String id) async {
-    if (connected == true) {
+    if (context.read<UserProvider>().user.isOnline == true) {
       String msg =
           "{'auth':'$auth','cmd':'send','userid':'$id', 'msgtext':'$sendmsg'}";
       setState(() {
         msgtext.text = "";
-        msglist.add(
-            MessageData(msgtext: sendmsg, userid: widget.myid, isme: true));
+        msglist.add(MessageData(
+            msgtext: sendmsg,
+            userid: context.read<UserProvider>().user.username,
+            isme: true));
       });
-      channel.sink.add(msg); //send message to reciever channel
+      channel.sink.add(msg); //send event to reciever channel
     } else {
-      channelconnect();
+      // channelconnect();
       print("Websocket is not connected.");
     }
   }
@@ -120,7 +102,9 @@ class _ChatPageState extends State<ChatPage> {
             appBar: AppBar(
               title: Text(" ${widget.recieverid} "),
               leading: Icon(Icons.circle,
-                  color: connected ? Colors.greenAccent : Colors.redAccent),
+                  color: context.watch<UserProvider>().user.isOnline
+                      ? Colors.greenAccent
+                      : Colors.redAccent),
               //if app is connected to node.js then it will be gree, else red.
               titleSpacing: 0,
             ),

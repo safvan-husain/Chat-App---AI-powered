@@ -13,12 +13,12 @@ router.post("/auth/sign-in", async (req, res) => {
     let user = await UserModel.findOne({ username });
     let token;
     if (user) {
-      console.log(await new Password().validate(password, user!.password));
-      console.log(password + "=" + user.password);
+      // console.log(await new Password().validate(password, user!.password));
+      // console.log(password + "=" + user.password);
 
       if (await new Password().validate(password, user.password)) {
         token = new Token().generate(user._id);
-        console.log(token + user._id);
+        // console.log(token + user._id);
 
         res.status(200).json({ user: user, token: token });
       } else {
@@ -37,7 +37,7 @@ router.post("/auth/sign-in", async (req, res) => {
 
 router.get("/auth/token", auth, async (req: any, res: Response) => {
   try {
-    var user = await UserModel.findById(req.userID);console.log(user);
+    var user = await UserModel.findById(req.userID);
     
     res.status(200).json(user);
   } catch (error: any) {

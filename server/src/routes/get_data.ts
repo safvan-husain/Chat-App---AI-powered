@@ -4,13 +4,17 @@ import UserModel from "../model/user_model";
 
 const router = Router();
 
-router.get("/get-data/all-user", auth, async (req, res) => {
+router.get("/get-data/all-user", auth, async (req : any, res) => {
   try {
-    const users = await UserModel.find();
+    let users = await UserModel.find();
+    let user: any = await UserModel.findById(req.userID);
+    users = users.filter((x) => x.username != user.username);
+    console.log(users);
+    // console.log(req.userID);
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json(err);
-    console.log(err);
+    console.log(err); 
   }
 });
 

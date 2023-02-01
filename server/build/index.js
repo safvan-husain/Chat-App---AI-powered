@@ -53,10 +53,15 @@ mongoose_1.default.connect(process.env.MongoUrl, () => {
 const server = app.listen(process.env.PORT, () => console.log("port lisenting on " + process.env.PORT));
 const wss = new websocket.Server({ server });
 var webSockets = {};
+var conected_devices = [];
 wss.on("connection", function (ws, req) {
     var userID = req.url.substr(1); //get userid from URL/userid
+    // console.log(ws);
+    conected_devices.push(userID);
     webSockets[userID] = ws; //add new user to the connection list
-    console.log("User connected:" + userID);
+    // console.log("User connected:" + userID);
+    console.log(conected_devices);
+    // ws.send(JSON.stringify({ "conected_devices": webSockets}));
     ws.on("message", (message) => {
         console.log(message);
         var datastring = message.toString();
@@ -98,6 +103,8 @@ wss.on("connection", function (ws, req) {
         var userID = req.url.substr(1);
         delete webSockets[userID]; //on connection close, remove reciver from connection list
         console.log("User Disconnected: " + userID);
+        conected_devices.filter((e) => e !== userID);
+        console.log(conected_devices);
     });
     ws.send("connected");
 });

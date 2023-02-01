@@ -4,11 +4,13 @@ class User {
   final String id;
   final String username;
   final String email;
+  bool isOnline;
 
   User({
     required this.id,
     required this.username,
     required this.email,
+    required this.isOnline,
   });
 
   factory User.fromMap(Map<String, dynamic> map) {
@@ -16,6 +18,7 @@ class User {
       id: map['_id'],
       username: map['username'],
       email: map['email'],
+      isOnline: map['isOnline'],
     );
   }
   factory User.fromJson(String json) {
@@ -27,6 +30,7 @@ class User {
       'id': id,
       'username': username,
       'email': email,
+      'isOnline': isOnline
     };
   }
 }

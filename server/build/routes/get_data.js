@@ -20,7 +20,11 @@ const router = (0, express_1.Router)();
 exports.DataRouter = router;
 router.get("/get-data/all-user", authentication_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield user_model_1.default.find();
+        let users = yield user_model_1.default.find();
+        let user = yield user_model_1.default.findById(req.userID);
+        users = users.filter((x) => x.username != user.username);
+        console.log(users);
+        // console.log(req.userID);
         res.status(200).json(users);
     }
     catch (err) {
