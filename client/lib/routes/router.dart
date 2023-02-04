@@ -17,4 +17,6 @@ import '../pages/authentication/sign_up/sign_up_screen.dart';
   ],
 )
 class $AppRouter {}
+
+
 // flutter packages pub run build_runner watch

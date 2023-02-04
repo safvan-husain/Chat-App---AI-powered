@@ -67,8 +67,11 @@ wss.on("connection", function (ws, req) {
     webSockets[userID] = ws; //add new user to the connection list
     if (!conected_devices.includes(userID)) {
         conected_devices.push(userID);
-        ws.send(JSON.stringify({ "connected_devices": conected_devices }));
         console.log(conected_devices);
+        for (const userID in webSockets) {
+            //sending to every client in the network
+            webSockets[userID].send(JSON.stringify({ "connected_devices": conected_devices }));
+        }
     }
     ws.on("message", (message) => {
         var datastring = message.toString();
@@ -96,6 +99,10 @@ wss.on("connection", function (ws, req) {
                         ws.send(data.cmd + ":error");
                     }
                 }
+                else if (data.cmd == 'available_users') {
+                    console.log('called available users');
+                    ws.send(JSON.stringify({ "connected_devices": conected_devices }));
+                }
                 else {
                     console.log("No send command");
                     ws.send(data.cmd + ":error");
@@ -116,7 +123,10 @@ wss.on("connection", function (ws, req) {
             conected_devices.splice(index, 1);
         }
         console.log(conected_devices);
-        ws.send(JSON.stringify({ "connected_devices": conected_devices }));
+        for (const userID in webSockets) {
+            //sending to every client in the network
+            webSockets[userID].send(JSON.stringify({ "connected_devices": conected_devices }));
+        }
     });
     ws.send("connected");
 });

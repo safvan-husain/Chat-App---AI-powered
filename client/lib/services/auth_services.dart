@@ -35,7 +35,7 @@ class AuthServices {
     httpErrorHandler(
       context: context,
       response: response,
-      onSuccess: () async   {
+      onSuccess: () async {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('token', jsonDecode(response.body)['token']);
         var user = User.fromMap(jsonDecode(response.body)['user']);
