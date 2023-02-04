@@ -23,7 +23,7 @@ router.get("/get-data/all-user", authentication_1.auth, (req, res) => __awaiter(
         let users = yield user_model_1.default.find();
         let user = yield user_model_1.default.findById(req.userID);
         users = users.filter((x) => x.username != user.username);
-        console.log(users);
+        // console.log(users);
         // console.log(req.userID);
         res.status(200).json(users);
     }

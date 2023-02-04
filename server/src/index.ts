@@ -4,11 +4,12 @@ import * as dotenv from "dotenv";
 import * as websocket from "ws";
 import moment from "moment";
 import { SigninRouter } from "./routes/sign_in_route";
-import bodyParser from "body-parser";
+import bodyParser, { json } from "body-parser";
 import { SignUpRouter } from "./routes/sign_up_route";
 import mongoose, { ConnectOptions } from "mongoose";
 import cors from "cors";
 import { DataRouter } from "./routes/get_data";
+import { connect } from "http2";
 
 
 dotenv.config();
@@ -31,7 +32,15 @@ mongoose.connect(process.env.MongoUrl!, () => {
 
 const server = app.listen(process.env.PORT, () =>
   console.log("port lisenting on " + process.env.PORT)
-);
+).on("error", function (err) {
+  process.once("SIGUSR2", function () {
+    process.kill(process.pid, "SIGUSR2");
+  });
+  process.on("SIGINT", function () {
+    // this is only called on ctrl+c, not restart
+    process.kill(process.pid, "SIGINT");
+  });
+});
 
 const wss = new websocket.Server({ server });
 
@@ -39,30 +48,30 @@ var webSockets: any = {};
 var conected_devices: string[] = [];
 wss.on("connection", function (ws, req) {
   var userID = req.url!.substr(1); //get userid from URL/userid
-  // console.log(ws);
-  conected_devices.push(userID);
   webSockets[userID] = ws; //add new user to the connection list
-  // console.log("User connected:" + userID);
-  console.log(conected_devices);
-  
-  // ws.send(JSON.stringify({ "conected_devices": webSockets}));
+  if(!conected_devices.includes(userID)){
+    conected_devices.push(userID);
+    ws.send(JSON.stringify({"connected_devices": conected_devices}));
+    console.log(conected_devices);
+    
+  }
   ws.on("message", (message) => {
-    console.log(message);
-
     var datastring = message.toString();
     if (datastring.charAt(0) == "{") {
-      // Check if message starts with '{' to check if it's json
+      
       datastring = datastring.replace(/\'/g, '"');
       var data = JSON.parse(datastring); 
       if (data.auth == "chatapphdfgjd34534hjdfk") {
-        if (data.cmd == "send") {
-          var boardws = webSockets[data.userid]; //check if there is reciever connection
+        if (data.cmd == "send") { 
+          var boardws = webSockets[data.receiverId]; //check if there is reciever connection
           if (boardws) {
             var cdata =
               "{'cmd':'" +
               data.cmd +
-              "','userid':'" +
-              data.userid +
+              "','receiverId':'" +
+              data.receiverId +
+              "', 'senderId':'" +
+              data.senderId +
               "', 'msgtext':'" +
               data.msgtext +
               "'}";
@@ -86,9 +95,12 @@ wss.on("connection", function (ws, req) {
     var userID = req.url!.substr(1);
     delete webSockets[userID]; //on connection close, remove reciver from connection list
     console.log("User Disconnected: " + userID);
-    conected_devices.filter((e) => e !== userID);
+    var index = conected_devices.indexOf(userID);
+    if (index > -1) {
+      conected_devices.splice(index, 1);
+    }
     console.log(conected_devices);
-    
+    ws.send(JSON.stringify({"connected_devices": conected_devices}));
   });
 
   ws.send("connected");

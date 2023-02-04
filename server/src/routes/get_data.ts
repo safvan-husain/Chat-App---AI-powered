@@ -9,7 +9,7 @@ router.get("/get-data/all-user", auth, async (req : any, res) => {
     let users = await UserModel.find();
     let user: any = await UserModel.findById(req.userID);
     users = users.filter((x) => x.username != user.username);
-    console.log(users);
+    // console.log(users);
     // console.log(req.userID);
     res.status(200).json(users);
   } catch (err) {

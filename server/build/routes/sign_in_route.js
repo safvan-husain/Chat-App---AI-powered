@@ -22,6 +22,7 @@ const router = (0, express_1.Router)();
 exports.SigninRouter = router;
 router.post("/auth/sign-in", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
+    // console.log('login called');
     try {
         let user = yield user_model_1.default.findOne({ username });
         let token;

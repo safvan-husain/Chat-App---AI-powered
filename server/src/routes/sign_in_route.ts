@@ -8,6 +8,7 @@ const router = Router();
 
 router.post("/auth/sign-in", async (req, res) => {
   const { username, password } = req.body;
+// console.log('login called');
 
   try {
     let user = await UserModel.findOne({ username });
