@@ -1,3 +1,4 @@
+import 'package:client/local_database/message_schema.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:client/routes/router.gr.dart';
@@ -14,6 +15,9 @@ void main() {
         ChangeNotifierProvider(
           create: (_) => WsProvider(),
         ),
+        Provider(
+          create: (_) => AppDatabase(),
+        )
       ],
       child: const MyApp(),
     ),

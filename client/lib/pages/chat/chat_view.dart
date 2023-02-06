@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:client/local_database/message_schema.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +30,8 @@ class _ChatPageState extends State<ChatPage> {
   late IOWebSocketChannel channel =
       widget.channel; //channel varaible for websocket
   late bool connected; // boolean value to track connection status
-
-  String auth = "chatapphdfgjd34534hjdfk"; //auth key
-
+  var auth = "chatapphdfgjd34534hjdfk"; //auth key
+  late AppDatabase database = Provider.of<AppDatabase>(context, listen: false);
   List<MessageData> msglist = [];
 
   TextEditingController msgtext = TextEditingController();
@@ -40,15 +40,21 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     msgtext.text = "";
     listenToMessages();
+    loadMessageFromLocalStorage();
     // channelconnect();
     super.initState();
+  }
+
+  void loadMessageFromLocalStorage() async {
+    final allCategories = await database.select(database.messages).get();
+    print('Categories in database: $allCategories');
   }
 
   void listenToMessages() {
     late StreamController<String> streamController =
         Provider.of<WsProvider>(context, listen: false).streamController;
     try {
-      streamController.stream.listen((event) {
+      streamController.stream.listen((event) async {
         log(event);
         if (event.substring(0, 6) == '{"cmd"') {
           print("Message data anallo");
@@ -63,6 +69,9 @@ class _ChatPageState extends State<ChatPage> {
               sender: jsondata["senderId"],
               isme: false,
             ));
+            await database
+                .into(database.messages)
+                .insert(MessagesCompanion.insert(content: jsondata["msgtext"]));
             // if (mounted) return;
             setState(() {});
           }

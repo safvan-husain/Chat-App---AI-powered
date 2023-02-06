@@ -1,1 +1,2 @@
-const uri = "http://192.168.108.149:3000";
+const uri = "http://$ipAddress:3000";
+const ipAddress = '192.168.144.149';

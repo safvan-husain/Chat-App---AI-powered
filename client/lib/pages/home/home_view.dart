@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:client/constance/constant_variebles.dart';
 import 'package:client/pages/home/home_view_model.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:client/provider/stream_provider.dart';
@@ -77,7 +78,7 @@ class _HomePageState extends State<HomePage> {
   channelconnect() {
     try {
       channel = IOWebSocketChannel.connect(
-          "ws://192.168.108.149:3000/$myid"); //channel IP : Port
+          "ws://$ipAddress:3000/$myid"); //channel IP : Port
       channel.stream.listen(
         (message) {
           log(message);
