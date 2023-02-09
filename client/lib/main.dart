@@ -1,5 +1,6 @@
 import 'package:client/local_database/message_schema.dart';
 import 'package:client/provider/stream_provider.dart';
+import 'package:client/provider/unread_messages.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:client/routes/router.gr.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,9 @@ void main() {
         ),
         Provider(
           create: (_) => AppDatabase(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => Unread(),
         )
       ],
       child: const MyApp(),

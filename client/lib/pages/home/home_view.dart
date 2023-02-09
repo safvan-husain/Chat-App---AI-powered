@@ -4,7 +4,9 @@ import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:client/constance/constant_variebles.dart';
+import 'package:client/pages/chat/chat_view.dart';
 import 'package:client/pages/home/home_view_model.dart';
+import 'package:client/provider/unread_messages.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:client/routes/router.gr.dart';
@@ -15,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stacked/stacked.dart';
 import 'package:web_socket_channel/io.dart';
 
+import '../../local_database/message_schema.dart';
 import '../../models/user_model.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,7 +43,7 @@ class _HomePageState extends State<HomePage> {
   GetDataService getData = GetDataService();
   late StreamController<String> streamController =
       Provider.of<WsProvider>(context, listen: false).streamController;
-
+  late AppDatabase database = Provider.of<AppDatabase>(context, listen: false);
   void getAllUsers(BuildContext context) async {
     accounts = await getData.allUsers(context: context);
     setState(() {});
@@ -80,39 +83,76 @@ class _HomePageState extends State<HomePage> {
       channel = IOWebSocketChannel.connect(
           "ws://$ipAddress:3000/$myid"); //channel IP : Port
       channel.stream.listen(
-        (message) {
-          log(message);
-          setState(() {
-            if (message == "connected") {
-              connected = true;
-              Provider.of<UserProvider>(context, listen: false)
-                  .setIsOnline(true);
-              setState(() {});
-              // print("Connection establised.");
-            } else if (message == "send:success") {
-              // print("Message send success");
-              setState(() {
-                msgtext.text = "";
-              });
-            } else if (message == "send:error") {
-              // print("Message send error - what do i do?");
-            } else if (message.substring(0, 6) == "{'cmd'") {
-              // print("Message datathanne");
+        (message) async {
+          // log(message);
 
-              message = message.replaceAll(RegExp("'"), '"');
-              var jsondata = json.decode(message);
-              // print(jsondata);
-              log(jsondata['receiverId'] + "==" + myid);
-              if (jsondata['receiverId'] == myid) {
-                streamController.add(message);
-              }
-            } else if (message.substring(0, 6) == '{"conn') {
-              message = message.replaceAll(RegExp("'"), '"');
-              var jsondata = json.decode(message);
-              Provider.of<WsProvider>(context, listen: false)
-                  .updateOnlineUsers(jsondata["connected_devices"]);
+          if (message == "connected") {
+            connected = true;
+            Provider.of<UserProvider>(context, listen: false).setIsOnline(true);
+            setState(() {});
+            // print("Connection establised.");
+          } else if (message.substring(0, 6) == "{'suc'") {
+            message = message.replaceAll(RegExp("'"), '"');
+            var jsondata = json.decode(message);
+            if (jsondata["senderId"] != null &&
+                jsondata['receiverId'] != null) {
+              await database.into(database.messages).insert(
+                    MessagesCompanion.insert(
+                      content: jsondata["msgtext"],
+                      senderId: jsondata["senderId"],
+                      receiverId: jsondata['receiverId'],
+                      isRead: false,
+                      time: DateTime.now(),
+                    ),
+                  );
+            } else {
+              log('sender or reciever null');
             }
-          });
+
+            // print("Message send success");
+            setState(() {
+              msgtext.text = "";
+            });
+          } else if (message == "send:error") {
+            // print("Message send error - what do i do?");
+          } else if (message.substring(0, 6) == "{'cmd'") {
+            // print("Message datathanne");
+
+            message = message.replaceAll(RegExp("'"), '"');
+            var jsondata = json.decode(message);
+            if (jsondata['receiverId'] == myid) {
+              streamController.add(message);
+              Provider.of<Unread>(context, listen: false).addMessages(
+                MessageData(
+                  sender: jsondata["senderId"],
+                  isread: false,
+                  time: DateTime.now(),
+                  isme: false,
+                  msgtext: jsondata["msgtext"],
+                ),
+              );
+              if (jsondata["senderId"] != null &&
+                  jsondata['receiverId'] != null) {
+                await database.into(database.messages).insert(
+                      MessagesCompanion.insert(
+                        content: jsondata["msgtext"],
+                        senderId: jsondata["senderId"],
+                        receiverId: jsondata['receiverId'],
+                        isRead: false,
+                        time: DateTime.now(),
+                      ),
+                    );
+              } else {
+                log('sender or reciever null');
+              }
+            }
+          } else if (message.substring(0, 6) == '{"conn') {
+            message = message.replaceAll(RegExp("'"), '"');
+            var jsondata = json.decode(message);
+            Provider.of<WsProvider>(context, listen: false)
+                .updateOnlineUsers(jsondata["connected_devices"]);
+          }
+          setState(() {});
         },
         onDone: () {
           //if WebSocket is disconnected
@@ -169,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   context.router.push(
                     ChatRoute(
-                      recieverid: accounts[index].username,
+                      senderId: accounts[index].username,
                       channel: channel,
                     ),
                   );
@@ -180,13 +220,11 @@ class _HomePageState extends State<HomePage> {
                         'https://lh3.googleusercontent.com/a/AEdFTp7Wst9_bZuIYK4TkKmkNSEDfozjlI6KggsPTfz3=s96-c-rg-br100'),
                   ),
                   title: Text(accounts[index].username),
-                  trailing: Icon(Icons.circle,
-                      color: context
-                              .watch<WsProvider>()
-                              .onlineUsers
-                              .contains(accounts[index].username)
-                          ? Colors.greenAccent
-                          : Colors.redAccent),
+                  trailing: Text(
+                    Provider.of<Unread>(context)
+                        .numberOfUnreadMessOf(accounts[index].username)
+                        .toString(),
+                  ),
                 ),
               );
             },

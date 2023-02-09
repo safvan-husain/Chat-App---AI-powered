@@ -57,7 +57,7 @@ class AppRouter extends _i6.RootStackRouter {
         child: _i5.ChatPage(
           key: args.key,
           channel: args.channel,
-          recieverid: args.recieverid,
+          senderId: args.senderId,
         ),
       );
     },
@@ -142,14 +142,14 @@ class ChatRoute extends _i6.PageRouteInfo<ChatRouteArgs> {
   ChatRoute({
     _i7.Key? key,
     required _i8.IOWebSocketChannel channel,
-    required String recieverid,
+    required String senderId,
   }) : super(
           ChatRoute.name,
           path: '/chat-page',
           args: ChatRouteArgs(
             key: key,
             channel: channel,
-            recieverid: recieverid,
+            senderId: senderId,
           ),
         );
 
@@ -160,17 +160,17 @@ class ChatRouteArgs {
   const ChatRouteArgs({
     this.key,
     required this.channel,
-    required this.recieverid,
+    required this.senderId,
   });
 
   final _i7.Key? key;
 
   final _i8.IOWebSocketChannel channel;
 
-  final String recieverid;
+  final String senderId;
 
   @override
   String toString() {
-    return 'ChatRouteArgs{key: $key, channel: $channel, recieverid: $recieverid}';
+    return 'ChatRouteArgs{key: $key, channel: $channel, senderId: $senderId}';
   }
 }

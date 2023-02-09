@@ -92,7 +92,16 @@ wss.on("connection", function (ws, req) {
                             data.msgtext +
                             "'}";
                         boardws.send(cdata); //send message to reciever
-                        ws.send(data.cmd + ":success");
+                        cdata = "{'suc':'" +
+                            "success:send" +
+                            "','receiverId':'" +
+                            data.receiverId +
+                            "', 'senderId':'" +
+                            data.senderId +
+                            "', 'msgtext':'" +
+                            data.msgtext +
+                            "'}";
+                        ws.send(cdata);
                     }
                     else {
                         console.log("No reciever user found.");

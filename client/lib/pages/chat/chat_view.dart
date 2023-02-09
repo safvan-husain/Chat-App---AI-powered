@@ -3,23 +3,25 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:client/local_database/message_schema.dart';
-import 'package:client/provider/stream_provider.dart';
-import 'package:client/provider/user_provider.dart';
+import 'package:client/provider/unread_messages.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
 import 'package:web_socket_channel/io.dart';
-
+import 'package:intl/intl.dart';
+import 'package:client/local_database/message_schema.dart';
 import 'package:client/pages/chat/chat_view_model.dart';
+import 'package:client/provider/stream_provider.dart';
+import 'package:client/provider/user_provider.dart';
 
 class ChatPage extends StatefulWidget {
   IOWebSocketChannel channel;
-  String recieverid;
+  String senderId;
   ChatPage({
     Key? key,
     required this.channel,
-    required this.recieverid,
+    required this.senderId,
   }) : super(key: key);
 
   @override
@@ -41,39 +43,74 @@ class _ChatPageState extends State<ChatPage> {
     msgtext.text = "";
     listenToMessages();
     loadMessageFromLocalStorage();
-    // channelconnect();
     super.initState();
   }
 
+  late String myId = context.read<UserProvider>().user.username;
+
   void loadMessageFromLocalStorage() async {
-    final allCategories = await database.select(database.messages).get();
-    print('Categories in database: $allCategories');
+    final allMessages = await database.select(database.messages).get();
+    for (var message in allMessages) {
+      if (message.senderId == widget.senderId) {
+        msglist.add(
+          MessageData(
+            msgtext: message.content,
+            sender: message.senderId,
+            isme: false,
+            isread: true,
+            time: message.time,
+          ),
+        );
+        (database.update(database.messages)
+              ..where(
+                (tbl) => tbl.id.equals(message.id),
+              ))
+            .write(
+          const MessagesCompanion(
+            isRead: drift.Value(true),
+          ),
+        );
+      } else if (message.senderId == myId &&
+          message.receiverId == widget.senderId) {
+        msglist.add(
+          MessageData(
+            msgtext: message.content,
+            sender: message.senderId,
+            isme: true,
+            isread: true,
+            time: message.time,
+          ),
+        );
+      }
+    }
+    setState(() {});
   }
 
   void listenToMessages() {
+    Provider.of<Unread>(context, listen: false).readMessagesOf(widget.senderId);
     late StreamController<String> streamController =
         Provider.of<WsProvider>(context, listen: false).streamController;
     try {
-      streamController.stream.listen((event) async {
-        log(event);
+      streamController.stream.listen((event) {
+        // log(event);
         if (event.substring(0, 6) == '{"cmd"') {
-          print("Message data anallo");
           event = event.replaceAll(RegExp("'"), '"');
           var jsondata = json.decode(event);
-          print(jsondata);
-          log(jsondata["senderId"] + "==" + widget.recieverid);
-          if (jsondata["senderId"] == widget.recieverid) {
-            msglist.add(MessageData(
-              //on event recieve, add data to model
-              msgtext: jsondata["msgtext"],
-              sender: jsondata["senderId"],
-              isme: false,
-            ));
-            await database
-                .into(database.messages)
-                .insert(MessagesCompanion.insert(content: jsondata["msgtext"]));
-            // if (mounted) return;
-            setState(() {});
+          if (jsondata["senderId"] == widget.senderId) {
+            msglist.add(
+              MessageData(
+                //on event recieve, add data to model
+                msgtext: jsondata["msgtext"],
+                sender: jsondata["senderId"],
+                isme: false,
+                isread: true,
+                time: DateTime.now(),
+              ),
+            );
+
+            if (mounted) {
+              setState(() {});
+            }
           }
         }
       });
@@ -81,8 +118,6 @@ class _ChatPageState extends State<ChatPage> {
       print(e);
     }
   }
-
-  late String myId = context.read<UserProvider>().user.username;
 
   Future<void> sendmsg(String sendmsg, String id) async {
     if (context.read<UserProvider>().user.isOnline == true) {
@@ -94,6 +129,8 @@ class _ChatPageState extends State<ChatPage> {
           msgtext: sendmsg,
           sender: myId,
           isme: true,
+          isread: false,
+          time: DateTime.now(),
         ));
       });
       channel.sink.add(msg); //send event to reciever channel
@@ -108,10 +145,11 @@ class _ChatPageState extends State<ChatPage> {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () => ChatViewModel(),
       builder: (context, viewModel, child) {
+        var column = Column;
         return Scaffold(
             resizeToAvoidBottomInset: true,
             appBar: AppBar(
-              title: Text(" ${widget.recieverid} "),
+              title: Text(" ${widget.senderId} "),
               leading: Icon(Icons.circle,
                   color: context.watch<UserProvider>().user.isOnline
                       ? Colors.greenAccent
@@ -132,8 +170,6 @@ class _ChatPageState extends State<ChatPage> {
                       reverse: true,
                       child: Column(
                         children: [
-                          const Text("Your Messages",
-                              style: TextStyle(fontSize: 20)),
                           Column(
                             children: msglist.map((onemsg) {
                               return Container(
@@ -156,17 +192,15 @@ class _ChatPageState extends State<ChatPage> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(onemsg.isme
-                                                ? "ID: ME"
-                                                : "ID: ${onemsg.sender}"),
                                             Container(
                                               margin: const EdgeInsets.only(
                                                   top: 10, bottom: 10),
-                                              child: Text(
-                                                  "Message: ${onemsg.msgtext}",
+                                              child: Text(onemsg.msgtext,
                                                   style: const TextStyle(
                                                       fontSize: 17)),
                                             ),
+                                            Text(DateFormat.jm()
+                                                .format(onemsg.time)),
                                           ],
                                         ),
                                       )));
@@ -202,9 +236,9 @@ class _ChatPageState extends State<ChatPage> {
                                 onPressed: () {
                                   if (msgtext.text != "") {
                                     sendmsg(
-                                        msgtext.text,
-                                        widget
-                                            .recieverid); //send message with websocket
+                                      msgtext.text,
+                                      widget.senderId,
+                                    ); //send message with websocket
                                   } else {
                                     print("Enter message");
                                   }
@@ -223,10 +257,13 @@ class _ChatPageState extends State<ChatPage> {
 class MessageData {
   //message data model
   String msgtext, sender;
-  bool isme;
+  bool isme, isread;
+  DateTime time;
   MessageData({
-    required this.msgtext,
     required this.sender,
+    required this.isread,
+    required this.time,
     required this.isme,
+    required this.msgtext,
   });
 }

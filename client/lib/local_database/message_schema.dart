@@ -6,11 +6,14 @@ import 'package:path/path.dart' as path;
 
 part 'message_schema.g.dart';
 
+//flutter packages pub run build_runner build
 class Messages extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get senderId => text().nullable()();
-  TextColumn get receiverId => text().nullable()();
+  TextColumn get senderId => text()();
+  TextColumn get receiverId => text()();
   TextColumn get content => text().withLength(min: 1, max: 200)();
+  BoolColumn get isRead => boolean()();
+  DateTimeColumn get time => dateTime()();
 
   @override
   Set<Column> get primaryKey => {id};
