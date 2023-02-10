@@ -18,7 +18,6 @@ import 'package:client/pages/chat/chat_view.dart' as _i5;
 import 'package:client/pages/home/home_view.dart' as _i4;
 import 'package:client/pages/splash/splash_page.dart' as _i1;
 import 'package:flutter/material.dart' as _i7;
-import 'package:web_socket_channel/io.dart' as _i8;
 
 class AppRouter extends _i6.RootStackRouter {
   AppRouter([_i7.GlobalKey<_i7.NavigatorState>? navigatorKey])
@@ -56,7 +55,6 @@ class AppRouter extends _i6.RootStackRouter {
         routeData: routeData,
         child: _i5.ChatPage(
           key: args.key,
-          channel: args.channel,
           senderId: args.senderId,
         ),
       );
@@ -141,14 +139,12 @@ class HomeRoute extends _i6.PageRouteInfo<void> {
 class ChatRoute extends _i6.PageRouteInfo<ChatRouteArgs> {
   ChatRoute({
     _i7.Key? key,
-    required _i8.IOWebSocketChannel channel,
     required String senderId,
   }) : super(
           ChatRoute.name,
           path: '/chat-page',
           args: ChatRouteArgs(
             key: key,
-            channel: channel,
             senderId: senderId,
           ),
         );
@@ -159,18 +155,15 @@ class ChatRoute extends _i6.PageRouteInfo<ChatRouteArgs> {
 class ChatRouteArgs {
   const ChatRouteArgs({
     this.key,
-    required this.channel,
     required this.senderId,
   });
 
   final _i7.Key? key;
 
-  final _i8.IOWebSocketChannel channel;
-
   final String senderId;
 
   @override
   String toString() {
-    return 'ChatRouteArgs{key: $key, channel: $channel, senderId: $senderId}';
+    return 'ChatRouteArgs{key: $key, senderId: $senderId}';
   }
 }

@@ -14,7 +14,6 @@ class _SplashPageState extends State<SplashPage> {
   AuthServices authServices = AuthServices();
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     tokenValidation();
   }

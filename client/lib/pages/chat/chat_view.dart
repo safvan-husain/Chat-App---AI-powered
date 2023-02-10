@@ -1,27 +1,18 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
 
 import 'package:client/local_database/message_services.dart';
 import 'package:client/provider/unread_messages.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:intl/intl.dart';
-import 'package:client/local_database/message_schema.dart';
 import 'package:client/pages/chat/chat_view_model.dart';
-import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/user_provider.dart';
 
 class ChatPage extends StatefulWidget {
-  IOWebSocketChannel channel;
   String senderId;
   ChatPage({
     Key? key,
-    required this.channel,
     required this.senderId,
   }) : super(key: key);
 
@@ -30,122 +21,25 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  late IOWebSocketChannel channel =
-      widget.channel; //channel varaible for websocket
-  late bool connected; // boolean value to track connection status
-  var auth = "chatapphdfgjd34534hjdfk"; //auth key
-  late AppDatabase database = Provider.of<AppDatabase>(context, listen: false);
-  List<MessageData> msglist = [];
-
-  TextEditingController msgtext = TextEditingController();
-
+  late bool isThisFirstCall;
   @override
   void initState() {
-    msgtext.text = "";
-    listenToMessages();
-    loadMessageFromLocalStorage();
+    isThisFirstCall = true;
     super.initState();
-  }
-
-  late String myId = context.read<UserProvider>().user.username;
-
-  void loadMessageFromLocalStorage() async {
-    final allMessages = await database.select(database.messages).get();
-    for (var message in allMessages) {
-      if (message.senderId == widget.senderId) {
-        msglist.add(
-          MessageData(
-            msgtext: message.content,
-            sender: message.senderId,
-            isme: false,
-            isread: true,
-            time: message.time,
-          ),
-        );
-        (database.update(database.messages)
-              ..where(
-                (tbl) => tbl.id.equals(message.id),
-              ))
-            .write(
-          const MessagesCompanion(
-            isRead: drift.Value(true),
-          ),
-        );
-      } else if (message.senderId == myId &&
-          message.receiverId == widget.senderId) {
-        msglist.add(
-          MessageData(
-            msgtext: message.content,
-            sender: message.senderId,
-            isme: true,
-            isread: true,
-            time: message.time,
-          ),
-        );
-      }
-    }
-    setState(() {});
-  }
-
-  void listenToMessages() {
-    Provider.of<Unread>(context, listen: false).readMessagesOf(widget.senderId);
-    late StreamController<String> streamController =
-        Provider.of<WsProvider>(context, listen: false).streamController;
-    try {
-      streamController.stream.listen((event) {
-        // log(event);
-        if (event.substring(0, 6) == '{"cmd"') {
-          event = event.replaceAll(RegExp("'"), '"');
-          var jsondata = json.decode(event);
-          if (jsondata["senderId"] == widget.senderId) {
-            msglist.add(
-              MessageData(
-                //on event recieve, add data to model
-                msgtext: jsondata["msgtext"],
-                sender: jsondata["senderId"],
-                isme: false,
-                isread: true,
-                time: DateTime.now(),
-              ),
-            );
-
-            if (mounted) {
-              setState(() {});
-            }
-          }
-        }
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<void> sendmsg(String sendmsg, String id) async {
-    if (context.read<UserProvider>().user.isOnline == true) {
-      String msg =
-          "{'auth':'$auth','cmd':'send','receiverId':'$id','senderId': '$myId', 'msgtext':'$sendmsg'}";
-      setState(() {
-        msgtext.text = "";
-        msglist.add(MessageData(
-          msgtext: sendmsg,
-          sender: myId,
-          isme: true,
-          isread: false,
-          time: DateTime.now(),
-        ));
-      });
-      channel.sink.add(msg); //send event to reciever channel
-    } else {
-      // channelconnect();
-      print("Websocket is not connected.");
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
-      viewModelBuilder: () => ChatViewModel(),
       builder: (context, viewModel, child) {
+        Provider.of<Unread>(context, listen: false)
+            .readMessagesOf(widget.senderId);
+        if (isThisFirstCall) {
+          viewModel.msgtext.text = "";
+          viewModel.loadMessageFromLocalStorage();
+          viewModel.listenToMessages();
+          isThisFirstCall = false;
+        }
         return Scaffold(
             resizeToAvoidBottomInset: true,
             appBar: AppBar(
@@ -160,7 +54,7 @@ class _ChatPageState extends State<ChatPage> {
                 ElevatedButton(
                   onPressed: () {
                     deleteChatOf(widget.senderId, context);
-                    msglist = [];
+                    viewModel.msglist = [];
                     setState(() {});
                     // log('deleteChatOf');
                   },
@@ -182,7 +76,7 @@ class _ChatPageState extends State<ChatPage> {
                       child: Column(
                         children: [
                           Column(
-                            children: msglist.map((onemsg) {
+                            children: viewModel.msglist.map((onemsg) {
                               return Container(
                                   margin: EdgeInsets.only(
                                     //if is my message, then it has margin 40 at left
@@ -235,7 +129,7 @@ class _ChatPageState extends State<ChatPage> {
                               child: Container(
                             margin: const EdgeInsets.all(10),
                             child: TextField(
-                              controller: msgtext,
+                              controller: viewModel.msgtext,
                               decoration: const InputDecoration(
                                   hintText: "Enter your Message"),
                             ),
@@ -245,9 +139,9 @@ class _ChatPageState extends State<ChatPage> {
                               child: ElevatedButton(
                                 child: const Icon(Icons.send),
                                 onPressed: () {
-                                  if (msgtext.text != "") {
-                                    sendmsg(
-                                      msgtext.text,
+                                  if (viewModel.msgtext.text != "") {
+                                    viewModel.sendmsg(
+                                      viewModel.msgtext.text,
                                       widget.senderId,
                                     ); //send message with websocket
                                   }
@@ -259,6 +153,13 @@ class _ChatPageState extends State<ChatPage> {
               ],
             ));
       },
+      viewModelBuilder: () => ChatViewModel(
+        context,
+        () {
+          if (mounted) setState(() {});
+        },
+        widget,
+      ),
     );
   }
 }

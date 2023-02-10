@@ -14,13 +14,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // UserProvider copyWith({
-  //   bool? isOnline,
-  // }) {
-  //   return UserProvider(
-  //     _user: _user ?? this._user,
-  //   );
-  // }
   void setIsOnline(bool isOnline) {
     _user.isOnline = isOnline;
     log(_user.isOnline.toString());

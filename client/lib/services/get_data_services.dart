@@ -19,18 +19,19 @@ class GetDataService {
         'x-auth-token': token!,
       },
     );
-    httpErrorHandler(
-      context: context,
-      response: response,
-      onSuccess: () {
-        var userList = jsonDecode(response.body);
-        print(userList.length);
-        for (var i = 0; i < userList.length; i++) {
-          var user = User.fromMap(userList.elementAt(i));
-          users.add(user);
-        }
-      },
-    );
+    if (context.mounted) {
+      httpErrorHandler(
+        context: context,
+        response: response,
+        onSuccess: () {
+          var userList = jsonDecode(response.body);
+          for (var i = 0; i < userList.length; i++) {
+            var user = User.fromMap(userList.elementAt(i));
+            users.add(user);
+          }
+        },
+      );
+    }
     return users;
   }
 }

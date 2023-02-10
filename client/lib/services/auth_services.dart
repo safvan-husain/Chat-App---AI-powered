@@ -32,20 +32,24 @@ class AuthServices {
         'email': email,
       }),
     );
-    httpErrorHandler(
-      context: context,
-      response: response,
-      onSuccess: () async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('token', jsonDecode(response.body)['token']);
-        var user = User.fromMap(jsonDecode(response.body)['user']);
-        Provider.of<UserProvider>(context, listen: false).setUser(user);
-        context.router.pushAndPopUntil(
-          const HomeRoute(),
-          predicate: (route) => false,
-        );
-      },
-    );
+    if (context.mounted) {
+      httpErrorHandler(
+        context: context,
+        response: response,
+        onSuccess: () async {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString('token', jsonDecode(response.body)['token']);
+          var user = User.fromMap(jsonDecode(response.body)['user']);
+          if (context.mounted) {
+            Provider.of<UserProvider>(context, listen: false).setUser(user);
+            context.router.pushAndPopUntil(
+              const HomeRoute(),
+              predicate: (route) => false,
+            );
+          }
+        },
+      );
+    }
   }
 
   void login({
@@ -64,20 +68,24 @@ class AuthServices {
         'password': password,
       }),
     );
-    httpErrorHandler(
-      context: context,
-      response: response,
-      onSuccess: () async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('token', jsonDecode(response.body)['token']);
-        var user = User.fromMap(jsonDecode(response.body)['user']);
-        Provider.of<UserProvider>(context, listen: false).setUser(user);
-        context.router.pushAndPopUntil(
-          const HomeRoute(),
-          predicate: (route) => false,
-        );
-      },
-    );
+    if (context.mounted) {
+      httpErrorHandler(
+        context: context,
+        response: response,
+        onSuccess: () async {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString('token', jsonDecode(response.body)['token']);
+          var user = User.fromMap(jsonDecode(response.body)['user']);
+          if (context.mounted) {
+            Provider.of<UserProvider>(context, listen: false).setUser(user);
+            context.router.pushAndPopUntil(
+              const HomeRoute(),
+              predicate: (route) => false,
+            );
+          }
+        },
+      );
+    }
   }
 
   void authenticationByToken({required BuildContext context}) async {
@@ -92,6 +100,7 @@ class AuthServices {
           'x-auth-token': token,
         },
       );
+      // ignore: use_build_context_synchronously
       httpErrorHandler(
         context: context,
         response: response,
