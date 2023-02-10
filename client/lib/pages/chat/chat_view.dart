@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:client/local_database/message_services.dart';
 import 'package:client/provider/unread_messages.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
@@ -145,7 +146,6 @@ class _ChatPageState extends State<ChatPage> {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () => ChatViewModel(),
       builder: (context, viewModel, child) {
-        var column = Column;
         return Scaffold(
             resizeToAvoidBottomInset: true,
             appBar: AppBar(
@@ -156,6 +156,17 @@ class _ChatPageState extends State<ChatPage> {
                       : Colors.redAccent),
               //if app is connected to node.js then it will be gree, else red.
               titleSpacing: 0,
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    deleteChatOf(widget.senderId, context);
+                    msglist = [];
+                    setState(() {});
+                    // log('deleteChatOf');
+                  },
+                  child: const Text('delete'),
+                )
+              ],
             ),
             body: Stack(
               children: [
@@ -239,8 +250,6 @@ class _ChatPageState extends State<ChatPage> {
                                       msgtext.text,
                                       widget.senderId,
                                     ); //send message with websocket
-                                  } else {
-                                    print("Enter message");
                                   }
                                 },
                               ))
