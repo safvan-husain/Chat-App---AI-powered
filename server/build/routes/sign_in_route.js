@@ -22,22 +22,19 @@ const router = (0, express_1.Router)();
 exports.SigninRouter = router;
 router.post("/auth/sign-in", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    // console.log('login called');
     try {
         let user = yield user_model_1.default.findOne({ username });
         let token;
         if (user) {
-            // console.log(await new Password().validate(password, user!.password));
-            // console.log(password + "=" + user.password);
             if (yield new password_hash_1.Password().validate(password, user.password)) {
                 token = new auth_token_1.Token().generate(user._id);
-                // console.log(token + user._id);
                 res.status(200).json({ user: user, token: token });
+                user.messages = [];
+                yield user.save();
             }
             else {
                 res.status(401).json({ message: "Invalid password" });
             }
-            // console.log({"user": user, "token": token});
         }
         else {
             res.status(401).json({ message: "User not found" });
@@ -53,8 +50,11 @@ router.get("/auth/token", authentication_1.auth, (req, res) => __awaiter(void 0,
     try {
         var user = yield user_model_1.default.findById(req.userID);
         res.status(200).json(user);
+        user.messages = [];
+        yield user.save();
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ error: error.message });
     }
 }));

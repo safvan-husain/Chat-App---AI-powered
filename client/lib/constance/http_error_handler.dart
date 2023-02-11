@@ -8,6 +8,7 @@ void httpErrorHandler({
   required http.Response response,
   required VoidCallback onSuccess,
 }) {
+  log(response.statusCode.toString());
   switch (response.statusCode) {
     case 200:
       onSuccess();

@@ -7,7 +7,6 @@ import 'package:stacked/stacked.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../local_database/message_schema.dart';
 import '../../provider/stream_provider.dart';
-import '../../provider/unread_messages.dart';
 import '../../provider/user_provider.dart';
 import '../../services/web_socket_set_up.dart';
 import 'chat_view.dart';
@@ -26,8 +25,13 @@ class ChatViewModel extends BaseViewModel {
 
   Future<void> sendmsg(String sendmsg, String id) async {
     if (context.read<UserProvider>().user.isOnline == true) {
-      String msg =
-          "{'auth':'$auth','cmd':'send','receiverId':'$id','senderId': '$myId', 'msgtext':'$sendmsg'}";
+      Map<dynamic, dynamic> msg = {
+        "auth": auth,
+        "cmd": 'send',
+        "receiverId": id,
+        "senderId": myId,
+        "msgtext": sendmsg
+      };
       msgtext.text = "";
       msglist.add(MessageData(
         msgtext: sendmsg,
@@ -37,9 +41,9 @@ class ChatViewModel extends BaseViewModel {
         time: DateTime.now(),
       ));
       setState();
-      sendEventToWebSocket(msg);
+      sendEventToWebSocket(jsonEncode(msg));
     } else {
-      // channelconnect();
+      channelconnect(context);
       print("Websocket is not connected.");
     }
   }

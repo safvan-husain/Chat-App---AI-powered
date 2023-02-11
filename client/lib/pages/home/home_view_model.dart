@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,8 +28,7 @@ class HomeViewModel extends BaseViewModel {
 
   void checkAvailableUsers() {
     if (context.read<UserProvider>().user.isOnline == true) {
-      String msg = "{'auth':'$auth','cmd':'available_users'}";
-      channel.sink.add(msg);
+      channel.sink.add(jsonEncode({"auth": auth, "cmd": 'available_users'}));
     } else {
       channelconnect(context);
     }

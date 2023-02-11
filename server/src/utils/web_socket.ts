@@ -1,7 +1,11 @@
 import * as websocket from "ws";
+import { Message } from "../model/message_model";
+import UserModel from "../model/user_model";
+
 export function onWebSocket(wss: websocket.Server<websocket.WebSocket>) {
   var webSockets: any = {};
   var conected_devices: string[] = [];
+
   wss.on("connection", function (ws, req) {
     var userID = req.url!.substr(1); //get userid from URL/userid
     webSockets[userID] = ws; //add new user to the connection list
@@ -11,56 +15,84 @@ export function onWebSocket(wss: websocket.Server<websocket.WebSocket>) {
       for (const userID in webSockets) {
         //sending to every client in the network
         webSockets[userID].send(
-          JSON.stringify({ connected_devices: conected_devices })
+          JSON.stringify({
+            cmd: "connected_devices",
+            connected_devices: conected_devices,
+          })
         );
       }
     }
-    ws.on("message", (message) => {
+    ws.on("message", async (message) => {
       var datastring = message.toString();
       if (datastring.charAt(0) == "{") {
         datastring = datastring.replace(/\'/g, '"');
         var data = JSON.parse(datastring);
         if (data.auth == "chatapphdfgjd34534hjdfk") {
           if (data.cmd == "send") {
-            var boardws = webSockets[data.receiverId]; //check if there is reciever connection
-            if (boardws) {
-              var cdata =
-                "{'cmd':'" +
-                data.cmd +
-                "','receiverId':'" +
-                data.receiverId +
-                "', 'senderId':'" +
-                data.senderId +
-                "', 'msgtext':'" +
-                data.msgtext +
-                "'}";
-              boardws.send(cdata); //send message to reciever
-              cdata =
-                "{'suc':'" +
-                "success:send" +
-                "','receiverId':'" +
-                data.receiverId +
-                "', 'senderId':'" +
-                data.senderId +
-                "', 'msgtext':'" +
-                data.msgtext +
-                "'}";
-              ws.send(cdata);
+            var reciever = webSockets[data.receiverId]; //check if there is reciever connection
+            if (reciever) {
+              var cdata = JSON.stringify({
+                cmd: data.cmd,
+                receiverId: data.receiverId,
+                senderId: data.senderId,
+                msgtext: data.msgtext,
+              });
+              reciever.send(cdata); //send message to reciever
+
+              ws.send(
+                JSON.stringify({
+                  cmd: "success:send",
+                  receiverId: data.receiverId,
+                  senderId: data.senderId,
+                  msgtext: data.msgtext,
+                })
+              );
             } else {
+              try {
+                let user = await UserModel.findOne({
+                  username: data.receiverId,
+                });
+                if (user) {
+                  console.log(data.receiverId + data.senderId);
+                  
+                  var msg = new Message({
+                    senderId: data.senderId,
+                    receiverId: data.receiverId,
+                    msgText: data.msgtext,
+                    isRead: false,
+                  });
+                  console.log(msg);
+                  
+                  user.messages.push(msg);
+                 user = await user.save();
+                //  console.log(user.messages);
+                 
+                }
+              } catch (error) {
+                console.log(error);
+                
+              }
               console.log("No reciever user found.");
-              ws.send(data.cmd + ":error");
+              ws.send(JSON.stringify({ cmd: "send:error",msg: 'user is offline' }));
             }
           } else if (data.cmd == "available_users") {
             console.log("called available users");
 
-            ws.send(JSON.stringify({ connected_devices: conected_devices }));
+            ws.send(
+              JSON.stringify({
+                cmd: "connected_devices",
+                connected_devices: conected_devices,
+              })
+            );
           } else {
             console.log("No send command");
-            ws.send(data.cmd + ":error");
+            ws.send(JSON.stringify({ cmd: "error" }));
           }
         } else {
           console.log("App Authincation error");
-          ws.send(data.cmd + ":error");
+          ws.send(
+            JSON.stringify({ cmd: "error", msg: "App Authincation error" })
+          );
         }
       }
     });
@@ -76,11 +108,14 @@ export function onWebSocket(wss: websocket.Server<websocket.WebSocket>) {
       for (const userID in webSockets) {
         //sending to every client in the network
         webSockets[userID].send(
-          JSON.stringify({ connected_devices: conected_devices })
+          JSON.stringify({
+            cmd: "connected_devices",
+            connected_devices: conected_devices,
+          })
         );
       }
     });
 
-    ws.send("connected");
+    ws.send(JSON.stringify({ cmd: "connected" }));
   });
 }
