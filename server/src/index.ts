@@ -11,6 +11,7 @@ import cors from "cors";
 import { DataRouter } from "./routes/get_data";
 import { connect } from "http2";
 import { onWebSocket } from "./utils/web_socket";
+import { ProfileRouter } from "./routes/user_account";
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use(SigninRouter);
 app.use(SignUpRouter);
 app.use(DataRouter);
+app.use(ProfileRouter);
 
 app.get("/", (req, res) => {
   res.send("privacy policy");

@@ -98,10 +98,9 @@ class AuthServices {
                   isRead: msgData.isread,
                   time: msgData.time,
                 ));
-            final SharedPreferences prefs =
-                await SharedPreferences.getInstance();
-            prefs.setString('token', jsonDecode(response.body)['token']);
           }
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', jsonDecode(response.body)['token']);
           if (context.mounted) {
             Provider.of<UserProvider>(context, listen: false).setUser(user);
             context.router.pushAndPopUntil(

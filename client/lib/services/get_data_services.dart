@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:client/constance/constant_variebles.dart';
 import 'package:client/constance/http_error_handler.dart';
 import 'package:client/models/user_model.dart';
@@ -12,11 +13,12 @@ class GetDataService {
   }) async {
     List<User> users = [];
     var token = await getTokenFromStorage();
+    if (token == null) return users;
     http.Response response = await http.get(
       Uri.parse('$uri/get-data/all-user'),
       headers: <String, String>{
         'content-type': 'application/json; charset=utf-8',
-        'x-auth-token': token!,
+        'x-auth-token': token,
       },
     );
     if (context.mounted) {

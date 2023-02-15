@@ -1,19 +1,24 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-import 'package:client/local_database/message_services.dart';
+import 'package:client/models/user_model.dart';
+import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/unread_messages.dart';
+import 'package:client/utils/show_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:multiavatar/multiavatar.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
 import 'package:intl/intl.dart';
 import 'package:client/pages/chat/chat_view_model.dart';
-import 'package:client/provider/user_provider.dart';
+
+import '../profile/avatar/svg_rapper.dart';
 
 class ChatPage extends StatefulWidget {
-  String senderId;
-  ChatPage({
+  final User user;
+  const ChatPage({
     Key? key,
-    required this.senderId,
+    required this.user,
   }) : super(key: key);
 
   @override
@@ -22,9 +27,20 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   late bool isThisFirstCall;
+  DrawableRoot? svgRoot = null;
+  _generateSvg(String? svgCode) async {
+    svgCode ??= multiavatar(widget.user.username);
+    return SvgWrapper(svgCode).generateLogo().then((value) {
+      setState(() {
+        svgRoot = value!;
+      });
+    });
+  }
+
   @override
   void initState() {
     isThisFirstCall = true;
+    _generateSvg(widget.user.avatar);
     super.initState();
   }
 
@@ -33,7 +49,7 @@ class _ChatPageState extends State<ChatPage> {
     return ViewModelBuilder.reactive(
       builder: (context, viewModel, child) {
         Provider.of<Unread>(context, listen: false)
-            .readMessagesOf(widget.senderId);
+            .readMessagesOf(widget.user.username);
         if (isThisFirstCall) {
           viewModel.msgtext.text = "";
           viewModel.loadMessageFromLocalStorage();
@@ -42,26 +58,7 @@ class _ChatPageState extends State<ChatPage> {
         }
         return Scaffold(
             resizeToAvoidBottomInset: true,
-            appBar: AppBar(
-              title: Text(" ${widget.senderId} "),
-              leading: Icon(Icons.circle,
-                  color: context.watch<UserProvider>().user.isOnline
-                      ? Colors.greenAccent
-                      : Colors.redAccent),
-              //if app is connected to node.js then it will be gree, else red.
-              titleSpacing: 0,
-              actions: [
-                ElevatedButton(
-                  onPressed: () {
-                    deleteChatOf(widget.senderId, context);
-                    viewModel.msglist = [];
-                    setState(() {});
-                    // log('deleteChatOf');
-                  },
-                  child: const Text('delete'),
-                )
-              ],
-            ),
+            appBar: _buildAppBar(),
             body: Stack(
               children: [
                 Positioned(
@@ -129,6 +126,7 @@ class _ChatPageState extends State<ChatPage> {
                               child: Container(
                             margin: const EdgeInsets.all(10),
                             child: TextField(
+                              textInputAction: TextInputAction.send,
                               controller: viewModel.msgtext,
                               decoration: const InputDecoration(
                                   hintText: "Enter your Message"),
@@ -142,7 +140,7 @@ class _ChatPageState extends State<ChatPage> {
                                   if (viewModel.msgtext.text != "") {
                                     viewModel.sendmsg(
                                       viewModel.msgtext.text,
-                                      widget.senderId,
+                                      widget.user.username,
                                     ); //send message with websocket
                                   }
                                 },
@@ -160,6 +158,37 @@ class _ChatPageState extends State<ChatPage> {
         },
         widget,
       ),
+    );
+  }
+
+  PopupMenuItem _buildPopupItem(String action) {
+    return PopupMenuItem(
+      child: Text(action),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      elevation: 00,
+      backgroundColor: Colors.white,
+      title: Text(
+        widget.user.username,
+        style: const TextStyle(color: Colors.black),
+      ),
+      leading:
+          svgRoot == null ? const CircleAvatar() : showAvatar(svgRoot!, true),
+      titleSpacing: 0,
+      actions: [
+        PopupMenuButton(
+            icon: const Icon(
+              Icons.more_vert,
+              color: Colors.black,
+            ),
+            itemBuilder: (ctx) => [
+                  _buildPopupItem('clear chat'),
+                  _buildPopupItem('Block'),
+                ])
+      ],
     );
   }
 }

@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 class User {
@@ -5,12 +6,14 @@ class User {
   final String username;
   final String email;
   bool isOnline;
+  final String? avatar;
 
   User({
     required this.id,
     required this.username,
     required this.email,
     required this.isOnline,
+    this.avatar,
   });
 
   factory User.fromMap(Map<String, dynamic> map) {
@@ -19,6 +22,7 @@ class User {
       username: map['username'],
       email: map['email'],
       isOnline: map['isOnline'],
+      avatar: map['avatar'],
     );
   }
   factory User.fromJson(String json) {
@@ -30,7 +34,24 @@ class User {
       'id': id,
       'username': username,
       'email': email,
-      'isOnline': isOnline
+      'isOnline': isOnline,
+      'avatar': avatar,
     };
+  }
+
+  User copyWith({
+    String? id,
+    String? username,
+    String? email,
+    bool? isOnline,
+    String? avatar,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      isOnline: isOnline ?? this.isOnline,
+      avatar: avatar ?? this.avatar,
+    );
   }
 }

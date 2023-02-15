@@ -5,6 +5,7 @@ export interface User extends Document {
   email: string;
   password: string;
   isOnline: boolean;
+  avatar: string;
   messages: Array<Message>;
 }
 
@@ -13,6 +14,7 @@ const userSchema: Schema = new Schema({
   email: { type: String, required: true },
   password: { type: String, required: true },
   isOnline: { type: Boolean, default: false },
+  avatar: { type: String, },
   messages: [ messageSchema ]
 
 });

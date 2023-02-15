@@ -51,6 +51,8 @@ class _SignInPageState extends State<SignInPage> {
                       height: MediaQuery.of(context).size.height / 20,
                     ),
                     TextFormField(
+                      textInputAction: TextInputAction.next,
+                      autofocus: true,
                       decoration: const InputDecoration(
                           labelText: 'Email',
                           labelStyle: TextStyle(
@@ -69,6 +71,7 @@ class _SignInPageState extends State<SignInPage> {
                       height: MediaQuery.of(context).size.height / 20,
                     ),
                     TextFormField(
+                      textInputAction: TextInputAction.done,
                       decoration: const InputDecoration(
                           labelText: 'Password',
                           labelStyle: TextStyle(
