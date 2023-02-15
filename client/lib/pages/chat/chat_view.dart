@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
         }
         return Scaffold(
             resizeToAvoidBottomInset: true,
-            appBar: _buildAppBar(),
+            appBar: _buildAppBar(viewModel),
             body: Stack(
               children: [
                 Positioned(
@@ -74,6 +74,10 @@ class _ChatPageState extends State<ChatPage> {
                         children: [
                           Column(
                             children: viewModel.msglist.map((onemsg) {
+                              if (onemsg.sender == 'Rajappan') {
+                                onemsg.msgtext = onemsg.msgtext
+                                    .replaceAll("AI_Rajappan:", "");
+                              }
                               return Container(
                                   margin: EdgeInsets.only(
                                     //if is my message, then it has margin 40 at left
@@ -138,10 +142,14 @@ class _ChatPageState extends State<ChatPage> {
                                 child: const Icon(Icons.send),
                                 onPressed: () {
                                   if (viewModel.msgtext.text != "") {
-                                    viewModel.sendmsg(
-                                      viewModel.msgtext.text,
-                                      widget.user.username,
-                                    ); //send message with websocket
+                                    if (widget.user.username == 'Rajappan') {
+                                      viewModel.sendmsgToAi();
+                                    } else {
+                                      viewModel.sendmsg(
+                                        viewModel.msgtext.text,
+                                        widget.user.username,
+                                      ); //send message with websocket
+                                    }
                                   }
                                 },
                               ))
@@ -161,22 +169,30 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  PopupMenuItem _buildPopupItem(String action) {
+  PopupMenuItem _buildPopupItem(String action, VoidCallback onTap) {
     return PopupMenuItem(
+      onTap: onTap,
       child: Text(action),
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(ChatViewModel viewModel) {
     return AppBar(
       elevation: 00,
       backgroundColor: Colors.white,
-      title: Text(
-        widget.user.username,
-        style: const TextStyle(color: Colors.black),
+      title: Row(
+        children: [
+          Text(
+            widget.user.username,
+            style: const TextStyle(color: Colors.black),
+          ),
+        ],
       ),
-      leading:
-          svgRoot == null ? const CircleAvatar() : showAvatar(svgRoot!, true),
+      leading: svgRoot == null
+          ? const CircleAvatar()
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: showAvatar(svgRoot!, 0)),
       titleSpacing: 0,
       actions: [
         PopupMenuButton(
@@ -185,8 +201,11 @@ class _ChatPageState extends State<ChatPage> {
               color: Colors.black,
             ),
             itemBuilder: (ctx) => [
-                  _buildPopupItem('clear chat'),
-                  _buildPopupItem('Block'),
+                  _buildPopupItem('clear chat', () {
+                    viewModel.msglist.clear();
+                    setState(() {});
+                  }),
+                  _buildPopupItem('Block', () {}),
                 ])
       ],
     );

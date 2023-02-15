@@ -42,7 +42,7 @@ class _UserTileState extends State<UserTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: svgRoot == null ? CircleAvatar() : showAvatar(svgRoot!, true),
+      leading: svgRoot == null ? CircleAvatar() : showAvatar(svgRoot!, 50),
       title: Text(widget.user.username),
       trailing: Text(
         Provider.of<Unread>(context)

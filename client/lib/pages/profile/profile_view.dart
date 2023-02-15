@@ -63,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     alignment: Alignment.topCenter,
                     child: svgRoot == null
                         ? const CircleAvatar()
-                        : showAvatar(svgRoot!, false),
+                        : showAvatar(svgRoot!, 180),
                   ),
                   TextButton(
                     onPressed: () => viewModel.changeProfilePicture(),

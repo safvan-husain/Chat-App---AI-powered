@@ -14,104 +14,106 @@ class SettingsPage extends StatelessWidget {
       builder: (context, viewModel, child) {
         return Scaffold(
           appBar: _buildAppBar(context),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.only(left: 20, top: 20),
-                alignment: Alignment.bottomLeft,
-                child: const Text(
-                  'Account Settings',
-                  style: TextStyle(color: Colors.blueGrey),
+          body: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(left: 20, top: 20),
+                  alignment: Alignment.bottomLeft,
+                  child: const Text(
+                    'Account Settings',
+                    style: TextStyle(color: Colors.blueGrey),
+                  ),
                 ),
-              ),
-              InkWell(
-                onTap: () => context.router.push(const ProfileRoute()),
-                child: const Card(
+                InkWell(
+                  onTap: () => context.router.push(const ProfileRoute()),
+                  child: const Card(
+                    child: ListTile(
+                      leading: Icon(Icons.account_circle_outlined),
+                      title: Text('Profile'),
+                      subtitle: Text('edit profile, username'),
+                      trailing: Icon(Icons.arrow_forward_ios_outlined),
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: const Card(
+                    child: ListTile(
+                      leading: Icon(Icons.email_outlined),
+                      title: Text('Email'),
+                      subtitle: Text('edit email'),
+                      trailing: Icon(Icons.arrow_forward_ios_outlined),
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: const Card(
+                    child: ListTile(
+                      leading: Icon(Icons.password_rounded),
+                      title: Text('Password reset'),
+                      trailing: Icon(Icons.arrow_forward_ios_outlined),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.only(left: 20, top: 10),
+                  alignment: Alignment.bottomLeft,
+                  child: const Text(
+                    'App Settings',
+                    style: TextStyle(color: Colors.blueGrey),
+                  ),
+                ),
+                const Card(
                   child: ListTile(
-                    leading: Icon(Icons.account_circle_outlined),
-                    title: Text('Profile'),
-                    subtitle: Text('edit profile, username'),
+                    leading: Icon(Icons.notifications_outlined),
+                    title: Text('Notifications'),
                     trailing: Icon(Icons.arrow_forward_ios_outlined),
                   ),
                 ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: const Card(
+                const Card(
                   child: ListTile(
-                    leading: Icon(Icons.email_outlined),
-                    title: Text('Email'),
-                    subtitle: Text('edit email'),
+                    leading: Icon(Icons.chat_outlined),
+                    title: Text('Chats'),
                     trailing: Icon(Icons.arrow_forward_ios_outlined),
                   ),
                 ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: const Card(
+                const Card(
                   child: ListTile(
-                    leading: Icon(Icons.password_rounded),
-                    title: Text('Password reset'),
+                    leading: Icon(Icons.storage_rounded),
+                    title: Text('Storage '),
                     trailing: Icon(Icons.arrow_forward_ios_outlined),
                   ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(left: 20, top: 10),
-                alignment: Alignment.bottomLeft,
-                child: const Text(
-                  'App Settings',
-                  style: TextStyle(color: Colors.blueGrey),
+                const Card(
+                  child: ListTile(
+                    leading: Icon(Icons.help_outline_rounded),
+                    title: Text('Help'),
+                    trailing: Icon(Icons.arrow_forward_ios_outlined),
+                  ),
                 ),
-              ),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_outlined),
-                  title: Text('Notifications'),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
+                Container(
+                  padding: const EdgeInsets.only(top: 20),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Protecting Your Privacy',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
-              ),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.chat_outlined),
-                  title: Text('Chats'),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
-                ),
-              ),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.storage_rounded),
-                  title: Text('Storage '),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
-                ),
-              ),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.help_outline_rounded),
-                  title: Text('Help'),
-                  trailing: Icon(Icons.arrow_forward_ios_outlined),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(top: 20),
-                alignment: Alignment.center,
-                child: Text(
-                  'Protecting Your Privacy',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                alignment: Alignment.center,
-                child: Text(
-                  privacy_policy,
-                  style: const TextStyle(color: Colors.black),
-                  textAlign: TextAlign.center,
-                ),
-              )
-            ],
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  alignment: Alignment.center,
+                  child: Text(
+                    privacy_policy,
+                    style: const TextStyle(color: Colors.black),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },

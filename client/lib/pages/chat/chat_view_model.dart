@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:client/services/ai_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
@@ -22,6 +23,38 @@ class ChatViewModel extends BaseViewModel {
   TextEditingController msgtext = TextEditingController();
   late String myId = context.read<UserProvider>().user.username;
   var auth = "chatapphdfgjd34534hjdfk"; //auth key
+
+  Future<void> sendmsgToAi() async {
+    String prompt = "";
+    msglist.add(MessageData(
+      sender: myId,
+      isread: false,
+      time: DateTime.now().toLocal(),
+      isme: true,
+      msgtext: msgtext.text,
+    ));
+    msgtext.text = '';
+    setState();
+    for (MessageData msg in msglist) {
+      var sub_prompt = "";
+      if (msg.isme) {
+        sub_prompt = "me: ${msg.msgtext}\n";
+        prompt = prompt + sub_prompt;
+      } else {
+        sub_prompt = "AI_Rajappan: ${msg.msgtext}\n";
+        prompt = prompt + sub_prompt;
+      }
+    }
+    var reply = await AiService().sendMessage(context: context, text: prompt);
+    msglist.add(MessageData(
+      sender: 'user',
+      isread: false,
+      time: DateTime.now().toLocal(),
+      isme: false,
+      msgtext: reply,
+    ));
+    setState();
+  }
 
   Future<void> sendmsg(String sendmsg, String id) async {
     if (context.read<UserProvider>().user.isOnline == true) {
