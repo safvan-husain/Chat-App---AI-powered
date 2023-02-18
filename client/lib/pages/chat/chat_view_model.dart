@@ -1,6 +1,10 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:client/models/user_model.dart';
+import 'package:client/provider/chat_list_provider.dart';
 import 'package:client/services/ai_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,17 +21,19 @@ class ChatViewModel extends BaseViewModel {
 
   final BuildContext context;
   final VoidCallback setState;
-  final dynamic widget;
+  final ChatPage widget;
   List<MessageData> msglist = [];
-
+  late AppDatabase database = Provider.of<AppDatabase>(context, listen: false);
   TextEditingController msgtext = TextEditingController();
-  late String myId = context.read<UserProvider>().user.username;
+  late User user = context.read<UserProvider>().user;
   var auth = "chatapphdfgjd34534hjdfk"; //auth key
 
   Future<void> sendmsgToAi() async {
     String prompt = "";
+    Provider.of<ChatListProvider>(context, listen: false)
+        .toTheTopFromUsername("Rajappan");
     msglist.add(MessageData(
-      sender: myId,
+      sender: user.id,
       isread: false,
       time: DateTime.now().toLocal(),
       isme: true,
@@ -58,17 +64,28 @@ class ChatViewModel extends BaseViewModel {
 
   Future<void> sendmsg(String sendmsg, String id) async {
     if (context.read<UserProvider>().user.isOnline == true) {
+      Provider.of<ChatListProvider>(context, listen: false)
+          .toTheTopFromUsername(id);
+      await database.into(database.messages).insert(
+            MessagesCompanion.insert(
+              content: sendmsg,
+              senderId: user.username,
+              receiverId: id,
+              isRead: false,
+              time: DateTime.now(),
+            ),
+          );
       Map<dynamic, dynamic> msg = {
         "auth": auth,
         "cmd": 'send',
         "receiverId": id,
-        "senderId": myId,
+        "senderId": user.username,
         "msgtext": sendmsg
       };
       msgtext.text = "";
       msglist.add(MessageData(
         msgtext: sendmsg,
-        sender: myId,
+        sender: user.id,
         isme: true,
         isread: false,
         time: DateTime.now(),
@@ -81,14 +98,14 @@ class ChatViewModel extends BaseViewModel {
     }
   }
 
-  void loadMessageFromLocalStorage() async {
+  void loadMessageFromLocalStorage(List<Message> allmessages) async {
     late String myId = context.read<UserProvider>().user.username;
     late AppDatabase database =
         Provider.of<AppDatabase>(context, listen: false);
-    final allMessages = await database.select(database.messages).get();
+    // final allMessages = await database.select(database.messages).get();
 
-    for (var message in allMessages) {
-      if (message.senderId == widget.senderId) {
+    for (var message in allmessages) {
+      if (message.senderId == widget.user.username) {
         msglist.add(
           MessageData(
             msgtext: message.content,
@@ -108,7 +125,7 @@ class ChatViewModel extends BaseViewModel {
           ),
         );
       } else if (message.senderId == myId &&
-          message.receiverId == widget.senderId) {
+          message.receiverId == widget.user.username) {
         msglist.add(
           MessageData(
             msgtext: message.content,
@@ -120,7 +137,9 @@ class ChatViewModel extends BaseViewModel {
         );
       }
     }
-    setState();
+    Future.delayed(Duration.zero, () async {
+      setState();
+    });
   }
 
   void listenToMessages() {
@@ -132,7 +151,7 @@ class ChatViewModel extends BaseViewModel {
         if (event.substring(0, 6) == '{"cmd"') {
           event = event.replaceAll(RegExp("'"), '"');
           var jsondata = json.decode(event);
-          if (jsondata["senderId"] == widget.senderId) {
+          if (jsondata["senderId"] == widget.user.username) {
             msglist.add(
               MessageData(
                 //on event recieve, add data to model

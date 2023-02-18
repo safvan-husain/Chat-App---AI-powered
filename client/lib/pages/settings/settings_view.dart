@@ -32,7 +32,6 @@ class SettingsPage extends StatelessWidget {
                     child: ListTile(
                       leading: Icon(Icons.account_circle_outlined),
                       title: Text('Profile'),
-                      subtitle: Text('edit profile, username'),
                       trailing: Icon(Icons.arrow_forward_ios_outlined),
                     ),
                   ),
@@ -43,7 +42,6 @@ class SettingsPage extends StatelessWidget {
                     child: ListTile(
                       leading: Icon(Icons.email_outlined),
                       title: Text('Email'),
-                      subtitle: Text('edit email'),
                       trailing: Icon(Icons.arrow_forward_ios_outlined),
                     ),
                   ),

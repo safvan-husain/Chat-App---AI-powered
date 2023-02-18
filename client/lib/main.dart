@@ -1,4 +1,5 @@
 import 'package:client/local_database/message_schema.dart';
+import 'package:client/provider/chat_list_provider.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/unread_messages.dart';
 import 'package:client/provider/user_provider.dart';
@@ -12,6 +13,9 @@ void main() {
       providers: [
         ChangeNotifierProvider(
           create: (_) => UserProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ChatListProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) => WsProvider(),

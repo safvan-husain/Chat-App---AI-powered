@@ -33,16 +33,16 @@ class _UserTileState extends State<UserTile> {
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _generateSvg(widget.user.avatar);
   }
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: svgRoot == null ? CircleAvatar() : showAvatar(svgRoot!, 50),
+      leading:
+          svgRoot == null ? const CircleAvatar() : showAvatar(svgRoot!, 50),
       title: Text(widget.user.username),
       trailing: Text(
         Provider.of<Unread>(context)

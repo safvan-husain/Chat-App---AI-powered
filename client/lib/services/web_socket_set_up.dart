@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, invalid_use_of_protected_member
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -5,6 +7,7 @@ import 'dart:developer';
 import 'package:client/constance/snack_bar.dart';
 import 'package:client/local_database/message_schema.dart';
 import 'package:client/pages/home/home_view.dart';
+import 'package:client/provider/chat_list_provider.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +30,7 @@ channelconnect(BuildContext context) {
         "ws://$ipAddress:3000/$myid"); //channel IP : Port
     channel.stream.listen(
       (message) async {
+        log(message);
         message = message.replaceAll(RegExp("'"), '"');
         var jsondata = json.decode(message);
         switch (jsondata["cmd"]) {
@@ -34,21 +38,23 @@ channelconnect(BuildContext context) {
             Provider.of<UserProvider>(context, listen: false).setIsOnline(true);
             break;
           case "success:send":
-            await database.into(database.messages).insert(
-                  MessagesCompanion.insert(
-                    content: jsondata["msgtext"],
-                    senderId: jsondata["senderId"],
-                    receiverId: jsondata['receiverId'],
-                    isRead: false,
-                    time: DateTime.now(),
-                  ),
-                );
+            // await database.into(database.messages).insert(
+            //       MessagesCompanion.insert(
+            //         content: jsondata["msgtext"],
+            //         senderId: jsondata["senderId"],
+            //         receiverId: jsondata['receiverId'],
+            //         isRead: false,
+            //         time: DateTime.now(),
+            //       ),
+            //     );
             break;
           case "send:error":
             showSnackBar(context, jsondata["msg"]);
             break;
-          case "send":
+          case "listen":
             if (jsondata['receiverId'] == myid) {
+              Provider.of<ChatListProvider>(context, listen: false)
+                  .toTheTopFromUsername(jsondata["senderId"]);
               streamController.add(message);
               Provider.of<Unread>(context, listen: false).addMessages(
                 MessageData(
@@ -100,5 +106,6 @@ channelconnect(BuildContext context) {
 }
 
 void sendEventToWebSocket(String msg) {
+  log('addinf to channel sink');
   channel.sink.add(msg); //send event to reciever channel
 }

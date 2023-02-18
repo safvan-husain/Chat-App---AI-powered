@@ -12,6 +12,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:auto_route/auto_route.dart' as _i9;
+import 'package:client/local_database/message_schema.dart' as _i12;
 import 'package:client/models/user_model.dart' as _i11;
 import 'package:client/pages/authentication/sign_in/sign_in_screen.dart' as _i2;
 import 'package:client/pages/authentication/sign_up/sign_up_screen.dart' as _i3;
@@ -66,6 +67,7 @@ class AppRouter extends _i9.RootStackRouter {
         child: _i6.ChatPage(
           key: args.key,
           user: args.user,
+          allmessages: args.allmessages,
         ),
       );
     },
@@ -188,12 +190,14 @@ class ChatRoute extends _i9.PageRouteInfo<ChatRouteArgs> {
   ChatRoute({
     _i10.Key? key,
     required _i11.User user,
+    required List<_i12.Message> allmessages,
   }) : super(
           ChatRoute.name,
           path: '/chat-page',
           args: ChatRouteArgs(
             key: key,
             user: user,
+            allmessages: allmessages,
           ),
         );
 
@@ -204,15 +208,18 @@ class ChatRouteArgs {
   const ChatRouteArgs({
     this.key,
     required this.user,
+    required this.allmessages,
   });
 
   final _i10.Key? key;
 
   final _i11.User user;
 
+  final List<_i12.Message> allmessages;
+
   @override
   String toString() {
-    return 'ChatRouteArgs{key: $key, user: $user}';
+    return 'ChatRouteArgs{key: $key, user: $user, allmessages: $allmessages}';
   }
 }
 

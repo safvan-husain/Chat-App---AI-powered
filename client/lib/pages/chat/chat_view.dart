@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'package:client/local_database/message_schema.dart';
+import 'package:client/local_database/message_services.dart';
 import 'package:client/models/user_model.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/unread_messages.dart';
@@ -16,9 +18,11 @@ import '../profile/avatar/svg_rapper.dart';
 
 class ChatPage extends StatefulWidget {
   final User user;
+  final List<Message> allmessages;
   const ChatPage({
     Key? key,
     required this.user,
+    required this.allmessages,
   }) : super(key: key);
 
   @override
@@ -52,7 +56,7 @@ class _ChatPageState extends State<ChatPage> {
             .readMessagesOf(widget.user.username);
         if (isThisFirstCall) {
           viewModel.msgtext.text = "";
-          viewModel.loadMessageFromLocalStorage();
+          viewModel.loadMessageFromLocalStorage(widget.allmessages);
           viewModel.listenToMessages();
           isThisFirstCall = false;
         }
@@ -203,6 +207,9 @@ class _ChatPageState extends State<ChatPage> {
             itemBuilder: (ctx) => [
                   _buildPopupItem('clear chat', () {
                     viewModel.msglist.clear();
+                    if (widget.user.username != 'Rajappan') {
+                      deleteChatOf(widget.user.username, context);
+                    }
                     setState(() {});
                   }),
                   _buildPopupItem('Block', () {}),
