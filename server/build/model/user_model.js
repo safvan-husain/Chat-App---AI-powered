@@ -31,6 +31,7 @@ const userSchema = new mongoose_1.Schema({
     password: { type: String, required: true },
     isOnline: { type: Boolean, default: false },
     avatar: { type: String, },
+    appToken: { type: String, },
     messages: [message_model_1.messageSchema]
 });
 const UserModel = mongoose_1.default.model("User", userSchema);

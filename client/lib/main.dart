@@ -1,13 +1,34 @@
+import 'dart:developer';
+
 import 'package:client/local_database/message_schema.dart';
 import 'package:client/provider/chat_list_provider.dart';
 import 'package:client/provider/stream_provider.dart';
 import 'package:client/provider/unread_messages.dart';
 import 'package:client/provider/user_provider.dart';
 import 'package:client/routes/router.gr.dart';
+import 'package:client/services/push_notification_services.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // FirebaseMessaging.onMessage.listen((RemoteMessage event) {
+  //   print("message recieved");
+  //   print(event.notification!.body);
+  // });
+  // FirebaseMessaging.onMessageOpenedApp.listen((message) {
+  //   print('Message clicked!');
+  // });
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  if (!kIsWeb) {
+    await setupFlutterNotifications();
+  }
   runApp(
     MultiProvider(
       providers: [

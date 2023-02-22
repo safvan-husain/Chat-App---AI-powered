@@ -7,6 +7,7 @@ export interface User extends Document {
   isOnline: boolean;
   avatar: string;
   messages: Array<Message>;
+  appToken: string;
 }
 
 const userSchema: Schema = new Schema({
@@ -15,8 +16,8 @@ const userSchema: Schema = new Schema({
   password: { type: String, required: true },
   isOnline: { type: Boolean, default: false },
   avatar: { type: String, },
+  appToken: { type: String, },
   messages: [ messageSchema ]
-
 });
 
 const UserModel = mongoose.model<User>("User", userSchema);

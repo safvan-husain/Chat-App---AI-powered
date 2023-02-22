@@ -49,6 +49,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
+  void dispose() {
+    Provider.of<Unread>(context, listen: false).setChat = "";
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
       builder: (context, viewModel, child) {

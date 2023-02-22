@@ -32,7 +32,7 @@ export function onWebSocket(wss: websocket.Server<websocket.WebSocket>) {
             var reciever = webSockets[data.receiverId]; //check if there is reciever connection
             if (reciever) {
               var cdata = JSON.stringify({
-                cmd: data.cmd,
+                cmd: 'listen',
                 receiverId: data.receiverId,
                 senderId: data.senderId,
                 msgtext: data.msgtext,

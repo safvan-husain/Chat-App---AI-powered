@@ -8,6 +8,7 @@ import 'package:client/models/user_model.dart';
 import 'package:client/pages/chat/chat_view.dart';
 import 'package:client/provider/unread_messages.dart';
 import 'package:client/provider/user_provider.dart';
+import 'package:client/utils/firebase_token.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -60,6 +61,7 @@ class AuthServices {
     required String username,
     required String password,
   }) async {
+    log('login serv');
     http.Response response = await http.post(
       Uri.parse('$uri/auth/sign-in'),
       headers: <String, String>{
@@ -108,6 +110,15 @@ class AuthServices {
               predicate: (route) => false,
             );
           }
+          var token = await getFirebaseToken();
+          http.Response res = await http.post(
+            Uri.parse('$uri/app-token'),
+            headers: <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+              'x-auth-token': jsonDecode(response.body)['token'],
+            },
+            body: jsonEncode({'app_token': token}),
+          );
         },
       );
     }

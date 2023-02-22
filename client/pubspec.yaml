@@ -21,12 +21,13 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.0.0
   path: ^1.8.2
-  image_picker: ^0.8.6+1
-  cloudinary_public: ^0.20.0
   intl:
   fluttermoji: ^1.0.1
   flutter_svg:
   multiavatar: ^0.1.5
+  firebase_core: ^2.6.1
+  flutter_local_notifications: ^13.0.0
+  firebase_messaging: ^14.2.4
 
 
 dev_dependencies:

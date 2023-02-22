@@ -7,12 +7,14 @@ import 'package:client/provider/chat_list_provider.dart';
 import 'package:client/provider/unread_messages.dart';
 import 'package:client/routes/router.gr.dart';
 import 'package:client/services/get_data_services.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
 import 'package:web_socket_channel/io.dart';
 import '../../local_database/message_schema.dart';
 import '../../models/user_model.dart';
+import '../../services/push_notification_services.dart';
 import '../../services/web_socket_set_up.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,6 +29,7 @@ class HomePageState extends State<HomePage> {
   List<Message> allMessages = [];
   List<User> userList = [];
   GetDataService getData = GetDataService();
+  String currentChat = '';
   void getAllUsers(BuildContext context) async {
     await getData.allUsers(context: context);
     setState(() {});
@@ -38,10 +41,45 @@ class HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  // String? _token;
+  // String? initialMessage;
+  // bool _resolved = false;
+  // FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   @override
   void initState() {
     getAllUsers(context);
     channelconnect(context);
+    // _firebaseMessaging.getInitialMessage().then(
+    //     // (value) => setState(
+    //     //   () {
+    //     //     log(value.contentAvailable.toString());
+    //     //     _resolved = true;
+    //     //     initialMessage = value?.data.toString();
+    //     //   },
+    //     // ),
+    //     (value) {
+    //   if (value != null) {
+    //     print(value.data);
+    //   } else {
+    //     log('nothing inside');
+    //   }
+    // });
+
+    // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    //   log('A new onMessageOpenedApp event was published!');
+    // });
+    FirebaseMessaging.onMessage.listen((message) {
+      bool canIshow = true;
+      log(context.read<Unread>().currentChat);
+      (message.data.forEach((key, value) {
+        if (key == "reciever") {
+          if (value == context.read<Unread>().currentChat) {
+            canIshow = false;
+          }
+        }
+      }));
+      if (canIshow) showFlutterNotification(message);
+    });
 
     super.initState();
   }
@@ -54,6 +92,8 @@ class HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() {
+    currentChat = "";
+    log('nobody');
     updateUserList(context);
     readAllMessagesFromStorage();
     super.didChangeDependencies();
@@ -77,6 +117,9 @@ class HomePageState extends State<HomePage> {
                       allmessages: allMessages,
                     ),
                   );
+                  Provider.of<Unread>(context, listen: false).setChat =
+                      userList[index].username;
+                  log(context.read<Unread>().currentChat);
                 },
                 child: UserTile(user: userList[index]),
               );

@@ -1,7 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'dart:developer';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:client/models/user_model.dart';
 import 'package:client/pages/profile/profile_view_model.dart';
@@ -66,7 +64,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         : showAvatar(svgRoot!, 180),
                   ),
                   TextButton(
-                    onPressed: () => viewModel.changeProfilePicture(),
+                    onPressed: () {},
                     child: const Text('Change profile picture'),
                   ),
                   Padding(

@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 
 class Unread extends ChangeNotifier {
   final List<MessageData> _messages = [];
-
+  String _currentChat = "";
+  String get currentChat => _currentChat;
+  void set setChat(String chetter) => _currentChat;
   List<MessageData> get messages => _messages;
-
   void addMessages(MessageData message) {
     _messages.add(message);
     notifyListeners();

@@ -16,6 +16,7 @@ exports.ProfileRouter = void 0;
 const express_1 = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const user_model_1 = __importDefault(require("../model/user_model"));
+const push_notification_1 = require("../utils/push_notification");
 const router = (0, express_1.Router)();
 exports.ProfileRouter = router;
 router.post("/profile/change-dp", authentication_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -36,4 +37,28 @@ router.post("/profile/change-dp", authentication_1.auth, (req, res) => __awaiter
         res.status(500).json(error);
         console.log(error);
     }
+}));
+router.post('/app-token', authentication_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { app_token } = req.body;
+    console.log(app_token);
+    try {
+        let user = yield user_model_1.default.findById(req.userID);
+        if (user != null) {
+            user.appToken = app_token;
+            user = yield user.save();
+            res.status(200).json(user);
+        }
+        else {
+            res.status(400);
+            console.log('user not found');
+        }
+    }
+    catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+}));
+router.get('/sendmessage', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, push_notification_1.sendMessage)({ title: 'heej', body: 'nothing  in here', username: 'husain' });
+    res.send('mm');
 }));

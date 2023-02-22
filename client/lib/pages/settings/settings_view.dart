@@ -47,11 +47,13 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    viewModel.logOut();
+                  },
                   child: const Card(
                     child: ListTile(
                       leading: Icon(Icons.password_rounded),
-                      title: Text('Password reset'),
+                      title: Text('Log Out'),
                       trailing: Icon(Icons.arrow_forward_ios_outlined),
                     ),
                   ),
