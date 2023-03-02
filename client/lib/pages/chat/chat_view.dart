@@ -117,7 +117,6 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           Text(
             widget.user.username,
-            style: const TextStyle(color: Colors.black),
           ),
         ],
       ),
@@ -131,7 +130,6 @@ class _ChatPageState extends State<ChatPage> {
         PopupMenuButton(
             icon: const Icon(
               Icons.more_vert,
-              color: Colors.black,
             ),
             itemBuilder: (ctx) => [
                   _buildPopupItem('clear chat', () {

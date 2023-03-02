@@ -63,7 +63,7 @@ class _GoogleSignInPageState extends State<GoogleSignInPage> {
                 style: TextStyle(fontSize: 20),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 40)),
+                  minimumSize: const Size(double.infinity, 40)),
             ),
             FullWidthButton(text: "Use Form", onPress: () {}),
             TextButton(

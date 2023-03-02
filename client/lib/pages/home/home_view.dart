@@ -1,18 +1,20 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:client/pages/home/components/user_tile.dart';
+import 'package:client/pages/home/components/user_wrapper.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:stacked/stacked.dart';
+import 'package:web_socket_channel/io.dart';
+
 import 'package:client/pages/home/home_view_model.dart';
 import 'package:client/provider/chat_list_provider.dart';
 import 'package:client/provider/unread_messages.dart';
 import 'package:client/routes/router.gr.dart';
 import 'package:client/services/get_data_services.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stacked/stacked.dart';
-import 'package:web_socket_channel/io.dart';
+
 import '../../local_database/message_schema.dart';
 import '../../models/user_model.dart';
 import '../../services/push_notification_services.dart';
@@ -91,25 +93,10 @@ class HomePageState extends State<HomePage> {
           body: ListView.builder(
             itemCount: userList.length,
             itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                    border: Border(
-                        top: (index == 0)
-                            ? BorderSide(color: Theme.of(context).dividerColor)
-                            : BorderSide.none,
-                        bottom:
-                            BorderSide(color: Theme.of(context).dividerColor))),
-                child: InkWell(
-                  onTap: () {
-                    context.router.push(
-                      ChatRoute(
-                        user: userList[index],
-                        allmessages: allMessages,
-                      ),
-                    );
-                  },
-                  child: UserTile(user: userList[index]),
-                ),
+              return UserWrapper(
+                userList: userList,
+                allMessages: allMessages,
+                index: index,
               );
             },
           ),
@@ -118,7 +105,7 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  _buildAppBar(BuildContext context, viewModel) {
+  _buildAppBar(BuildContext context, HomeViewModel viewModel) {
     return PreferredSize(
       preferredSize: const Size(double.infinity, 40),
       child: AppBar(
@@ -127,29 +114,17 @@ class HomePageState extends State<HomePage> {
           style: TextStyle(color: Colors.blueGrey),
         ),
         elevation: 0,
-        actionsIconTheme: const IconThemeData(color: Colors.blueGrey),
         actions: [
           PopupMenuButton(
               icon: const Icon(
                 Icons.more_vert,
-                color: Colors.black,
               ),
               itemBuilder: (ctx) => [
                     _buildPopupItem('search', () {}),
                     _buildPopupItem('settings', () {
                       context.router.push(SettingsRoute());
                     }),
-                    _buildPopupItem('Log out', () async {
-                      // channel.sink.close();
-                      final SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      await prefs.setString('token', '');
-                      if (context.mounted) {}
-                      context.router.pushAndPopUntil(
-                        const GoogleSignInRoute(),
-                        predicate: (route) => false,
-                      );
-                    }),
+                    _buildPopupItem('Log out', viewModel.logOut),
                   ])
         ],
       ),

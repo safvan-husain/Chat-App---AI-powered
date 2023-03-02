@@ -14,7 +14,7 @@ class SettingsViewModel extends BaseViewModel {
     await prefs.setString('token', '');
     if (context.mounted) {}
     context.router.pushAndPopUntil(
-      const SignInRoute(),
+      const GoogleSignInRoute(),
       predicate: (route) => false,
     );
   }

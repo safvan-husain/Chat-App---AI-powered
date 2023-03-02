@@ -1,10 +1,11 @@
 import { Router } from "express";
+import * as dotenv from "dotenv";
 import { Configuration, OpenAIApi } from "openai";
 import { auth } from "../middlewares/authentication";
 
-
+dotenv.config();
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: process.env.openai_api_key,
 });
 const openai = new OpenAIApi(configuration);
 const router = Router();

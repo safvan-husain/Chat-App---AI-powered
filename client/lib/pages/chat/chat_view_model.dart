@@ -9,7 +9,6 @@ import 'package:client/services/ai_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
-import 'package:drift/drift.dart' as drift;
 import '../../local_database/message_schema.dart';
 import '../../models/message_model.dart';
 import '../../provider/stream_provider.dart';
@@ -103,8 +102,8 @@ class ChatViewModel extends BaseViewModel {
 
   void loadMessageFromLocalStorage(List<Message> allmessages) async {
     late String myId = context.read<UserProvider>().user.username;
-    late AppDatabase database =
-        Provider.of<AppDatabase>(context, listen: false);
+    // late AppDatabase database =
+    //     Provider.of<AppDatabase>(context, listen: false);
 
     for (var message in allmessages) {
       if (message.senderId == widget.user.username) {
@@ -117,15 +116,15 @@ class ChatViewModel extends BaseViewModel {
             time: message.time,
           ),
         );
-        (database.update(database.messages)
-              ..where(
-                (tbl) => tbl.id.equals(message.id),
-              ))
-            .write(
-          const MessagesCompanion(
-            isRead: drift.Value(true),
-          ),
-        );
+        // (database.update(database.messages)
+        //       ..where(
+        //         (tbl) => tbl.id.equals(message.id),
+        //       ))
+        //     .write(
+        //   const MessagesCompanion(
+        //     isRead: drift.Value(true),
+        //   ),
+        // );
       } else if (message.senderId == myId &&
           message.receiverId == widget.user.username) {
         msglist.add(

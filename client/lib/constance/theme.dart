@@ -18,12 +18,12 @@ ThemeData lightTheme = ThemeData(
         900: Color(0xff936F3E)
       },
     ),
-    primaryColor: Color.fromARGB(255, 199, 199, 198),
+    primaryColor: const Color.fromARGB(255, 199, 199, 198),
     primaryColorLight: const Color(0x1aF5E0C3),
     primaryColorDark: const Color(0xff936F3E),
     canvasColor: const Color(0xffE09E45),
-    scaffoldBackgroundColor: Color.fromARGB(226, 255, 255, 255),
-    cardColor: Color.fromARGB(255, 253, 253, 253),
+    scaffoldBackgroundColor: const Color.fromARGB(226, 255, 255, 255),
+    cardColor: const Color.fromARGB(255, 253, 253, 253),
     dividerColor: const Color(0x1f6D42CE),
     focusColor: const Color(0x1aF5E0C3));
 
@@ -49,7 +49,7 @@ ThemeData darkTheme = ThemeData(
     primaryColorLight: const Color(0x1a311F06),
     primaryColorDark: const Color(0xff936F3E),
     canvasColor: const Color(0xffE09E45),
-    scaffoldBackgroundColor: const Color(0xffB5BFD3),
+    scaffoldBackgroundColor: const Color.fromARGB(128, 109, 110, 110),
     cardColor: const Color(0xaa311F06),
     dividerColor: const Color(0x1f6D42CE),
     focusColor: const Color(0x1a311F06));
