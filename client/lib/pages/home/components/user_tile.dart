@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:client/provider/user_provider.dart';
 import 'package:client/utils/show_avatar.dart';
 import 'package:flutter/material.dart';
 
@@ -44,11 +43,20 @@ class _UserTileState extends State<UserTile> {
       leading:
           svgRoot == null ? const CircleAvatar() : showAvatar(svgRoot!, 50),
       title: Text(widget.user.username),
-      trailing: Text(
-        Provider.of<Unread>(context)
-            .numberOfUnreadMessOf(widget.user.username)
-            .toString(),
-      ),
+      trailing: Provider.of<Unread>(context)
+                  .numberOfUnreadMessOf(widget.user.username) ==
+              0
+          ? const SizedBox()
+          : CircleAvatar(
+              radius: 10.0,
+              backgroundColor: Colors.green,
+              child: Text(
+                Provider.of<Unread>(context)
+                    .numberOfUnreadMessOf(widget.user.username)
+                    .toString(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
     );
   }
 }

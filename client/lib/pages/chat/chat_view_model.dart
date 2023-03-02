@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../local_database/message_schema.dart';
+import '../../models/message_model.dart';
 import '../../provider/stream_provider.dart';
 import '../../provider/user_provider.dart';
 import '../../services/web_socket_set_up.dart';
@@ -22,7 +23,7 @@ class ChatViewModel extends BaseViewModel {
   final BuildContext context;
   final VoidCallback setState;
   final ChatPage widget;
-  List<MessageData> msglist = [];
+  List<MessageModel> msglist = [];
   late AppDatabase database = Provider.of<AppDatabase>(context, listen: false);
   TextEditingController msgtext = TextEditingController();
   late User user = context.read<UserProvider>().user;
@@ -32,16 +33,18 @@ class ChatViewModel extends BaseViewModel {
     String prompt = "";
     Provider.of<ChatListProvider>(context, listen: false)
         .toTheTopFromUsername("Rajappan");
-    msglist.add(MessageData(
-      sender: user.id,
-      isread: false,
-      time: DateTime.now().toLocal(),
-      isme: true,
-      msgtext: msgtext.text,
-    ));
+    msglist.add(
+      MessageModel(
+        sender: user.id,
+        isread: false,
+        time: DateTime.now().toLocal(),
+        isme: true,
+        msgtext: msgtext.text,
+      ),
+    );
     msgtext.text = '';
     setState();
-    for (MessageData msg in msglist) {
+    for (MessageModel msg in msglist) {
       var sub_prompt = "";
       if (msg.isme) {
         sub_prompt = "me: ${msg.msgtext}\n";
@@ -52,12 +55,12 @@ class ChatViewModel extends BaseViewModel {
       }
     }
     var reply = await AiService().sendMessage(context: context, text: prompt);
-    msglist.add(MessageData(
+    msglist.add(MessageModel(
       sender: 'user',
       isread: false,
       time: DateTime.now().toLocal(),
       isme: false,
-      msgtext: reply,
+      msgtext: reply.replaceAll("AI_Rajappan:", ""),
     ));
     setState();
   }
@@ -75,7 +78,7 @@ class ChatViewModel extends BaseViewModel {
               time: DateTime.now(),
             ),
           );
-      Map<dynamic, dynamic> msg = {
+      Map<String, String> msg = {
         "auth": auth,
         "cmd": 'send',
         "receiverId": id,
@@ -83,7 +86,7 @@ class ChatViewModel extends BaseViewModel {
         "msgtext": sendmsg
       };
       msgtext.text = "";
-      msglist.add(MessageData(
+      msglist.add(MessageModel(
         msgtext: sendmsg,
         sender: user.id,
         isme: true,
@@ -102,12 +105,11 @@ class ChatViewModel extends BaseViewModel {
     late String myId = context.read<UserProvider>().user.username;
     late AppDatabase database =
         Provider.of<AppDatabase>(context, listen: false);
-    // final allMessages = await database.select(database.messages).get();
 
     for (var message in allmessages) {
       if (message.senderId == widget.user.username) {
         msglist.add(
-          MessageData(
+          MessageModel(
             msgtext: message.content,
             sender: message.senderId,
             isme: false,
@@ -127,7 +129,7 @@ class ChatViewModel extends BaseViewModel {
       } else if (message.senderId == myId &&
           message.receiverId == widget.user.username) {
         msglist.add(
-          MessageData(
+          MessageModel(
             msgtext: message.content,
             sender: message.senderId,
             isme: true,
@@ -148,22 +150,19 @@ class ChatViewModel extends BaseViewModel {
     try {
       streamController.stream.listen((event) {
         // log(event);
-        if (event.substring(0, 6) == '{"cmd"') {
-          event = event.replaceAll(RegExp("'"), '"');
-          var jsondata = json.decode(event);
-          if (jsondata["senderId"] == widget.user.username) {
-            msglist.add(
-              MessageData(
-                //on event recieve, add data to model
-                msgtext: jsondata["msgtext"],
-                sender: jsondata["senderId"],
-                isme: false,
-                isread: true,
-                time: DateTime.now(),
-              ),
-            );
-            setState();
-          }
+        var jsondata = json.decode(event);
+        if (jsondata["senderId"] == widget.user.username) {
+          msglist.add(
+            MessageModel(
+              //on event recieve, add data to model
+              msgtext: jsondata["msgtext"],
+              sender: jsondata["senderId"],
+              isme: false,
+              isread: true,
+              time: DateTime.now(),
+            ),
+          );
+          setState();
         }
       });
     } catch (e) {

@@ -13,18 +13,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'constance/theme.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // FirebaseMessaging.onMessage.listen((RemoteMessage event) {
-  //   print("message recieved");
-  //   print(event.notification!.body);
-  // });
-  // FirebaseMessaging.onMessageOpenedApp.listen((message) {
-  //   print('Message clicked!');
-  // });
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   if (!kIsWeb) {
     await setupFlutterNotifications();
@@ -70,9 +64,8 @@ class _MyAppState extends State<MyApp> {
       routeInformationParser: _appRouter.defaultRouteParser(),
       debugShowCheckedModeBanner: false,
       title: 'Flutter Chat App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: lightTheme,
+      darkTheme: darkTheme,
     );
   }
 }

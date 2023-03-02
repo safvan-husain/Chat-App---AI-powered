@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.onWebSocket = void 0;
 const message_model_1 = require("../model/message_model");
 const user_model_1 = __importDefault(require("../model/user_model"));
+const push_notification_1 = require("./push_notification");
 function onWebSocket(wss) {
     var webSockets = {};
     var conected_devices = [];
@@ -40,6 +41,7 @@ function onWebSocket(wss) {
                 if (data.auth == "chatapphdfgjd34534hjdfk") {
                     if (data.cmd == "send") {
                         var reciever = webSockets[data.receiverId]; //check if there is reciever connection
+                        (0, push_notification_1.sendMessage)({ title: `Message from ${data.senderId}`, body: data.msgtext, username: data.receiverId });
                         if (reciever) {
                             var cdata = JSON.stringify({
                                 cmd: 'listen',

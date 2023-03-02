@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 class ChatListProvider extends ChangeNotifier {
   List<User> _chat_list = [];
   List<User> get chat_list => _chat_list;
+
   void setList(List<User> list) async {
     if (_chat_list.isEmpty) {
       List<String>? users = await readChatList();
@@ -19,6 +20,9 @@ class ChatListProvider extends ChangeNotifier {
               _chat_list.add(user);
             }
           }
+        }
+        if (_chat_list.length != list.length) {
+          _chat_list = list;
         }
       } else {
         _chat_list = list;

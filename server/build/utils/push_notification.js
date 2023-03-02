@@ -30,7 +30,7 @@ function sendMessage({ title, body, username }) {
                     body: body
                 },
                 data: {
-                    reciever: 'userSafvan',
+                    reciever: 'husain',
                 }
             };
             fcm.send(event, function (err, response) {

@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../constance/constant_variebles.dart';
-import '../pages/chat/chat_view.dart';
+import '../models/message_model.dart';
 import '../provider/unread_messages.dart';
 import '../provider/user_provider.dart';
 
@@ -57,7 +57,7 @@ channelconnect(BuildContext context) {
                   .toTheTopFromUsername(jsondata["senderId"]);
               streamController.add(message);
               Provider.of<Unread>(context, listen: false).addMessages(
-                MessageData(
+                MessageModel(
                   sender: jsondata["senderId"],
                   isread: false,
                   time: DateTime.now(),

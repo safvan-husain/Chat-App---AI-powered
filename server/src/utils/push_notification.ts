@@ -20,7 +20,7 @@ export async function sendMessage({title,body,username}:{title: string,body: str
             },
             
             data: {  //you can send only notification or only data(or include both)
-                reciever: 'userSafvan',
+                reciever: 'husain',
             }
         };
         

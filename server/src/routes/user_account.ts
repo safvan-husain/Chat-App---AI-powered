@@ -48,7 +48,7 @@ router.post('/app-token', auth,async (req: any, res)=> {
     
 });
 router.get('/sendmessage',async (req: any, res)=> {
-    sendMessage({ title: 'heej', body:'nothing  in here',username:'husain'})
+    sendMessage({ title: 'heej', body:'husain nothing  in here',username:'safvanHusian'})
     res.send('mm');
     
 });

@@ -46,6 +46,27 @@ router.post("/auth/sign-in", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).json({ message: err.message });
     }
 }));
+router.post("/auth/google-in", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    try {
+        let user = yield user_model_1.default.findOne({ email: email });
+        let token;
+        if (user) {
+            token = new auth_token_1.Token().generate(user._id);
+            res.status(200).json({ user: user, token: token });
+            user.messages = [];
+            yield user.save();
+        }
+        else {
+            res.status(401).json({ message: "User not found" });
+            console.log("user not found");
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ message: err.message });
+    }
+}));
 router.get("/auth/token", authentication_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         var user = yield user_model_1.default.findById(req.userID);

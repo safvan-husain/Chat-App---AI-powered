@@ -10,6 +10,7 @@ import 'package:client/services/get_data_services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stacked/stacked.dart';
 import 'package:web_socket_channel/io.dart';
 import '../../local_database/message_schema.dart';
@@ -29,7 +30,6 @@ class HomePageState extends State<HomePage> {
   List<Message> allMessages = [];
   List<User> userList = [];
   GetDataService getData = GetDataService();
-  String currentChat = '';
   void getAllUsers(BuildContext context) async {
     await getData.allUsers(context: context);
     setState(() {});
@@ -41,36 +41,17 @@ class HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  // String? _token;
-  // String? initialMessage;
-  // bool _resolved = false;
-  // FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  void connectToWebsocket() {
+    channelconnect(context);
+  }
+
   @override
   void initState() {
     getAllUsers(context);
-    channelconnect(context);
-    // _firebaseMessaging.getInitialMessage().then(
-    //     // (value) => setState(
-    //     //   () {
-    //     //     log(value.contentAvailable.toString());
-    //     //     _resolved = true;
-    //     //     initialMessage = value?.data.toString();
-    //     //   },
-    //     // ),
-    //     (value) {
-    //   if (value != null) {
-    //     print(value.data);
-    //   } else {
-    //     log('nothing inside');
-    //   }
-    // });
-
-    // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    //   log('A new onMessageOpenedApp event was published!');
-    // });
+    connectToWebsocket();
     FirebaseMessaging.onMessage.listen((message) {
+      log('onmsg');
       bool canIshow = true;
-      log(context.read<Unread>().currentChat);
       (message.data.forEach((key, value) {
         if (key == "reciever") {
           if (value == context.read<Unread>().currentChat) {
@@ -79,6 +60,9 @@ class HomePageState extends State<HomePage> {
         }
       }));
       if (canIshow) showFlutterNotification(message);
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('A new onMessageOpenedApp event was published!');
     });
 
     super.initState();
@@ -92,8 +76,6 @@ class HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() {
-    currentChat = "";
-    log('nobody');
     updateUserList(context);
     readAllMessagesFromStorage();
     super.didChangeDependencies();
@@ -105,23 +87,29 @@ class HomePageState extends State<HomePage> {
       viewModelBuilder: () => HomeViewModel(context),
       builder: (context, viewModel, child) {
         return Scaffold(
-          appBar: _buildAppBar(context),
+          appBar: _buildAppBar(context, viewModel),
           body: ListView.builder(
             itemCount: userList.length,
             itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  context.router.push(
-                    ChatRoute(
-                      user: userList[index],
-                      allmessages: allMessages,
-                    ),
-                  );
-                  Provider.of<Unread>(context, listen: false).setChat =
-                      userList[index].username;
-                  log(context.read<Unread>().currentChat);
-                },
-                child: UserTile(user: userList[index]),
+              return Container(
+                decoration: BoxDecoration(
+                    border: Border(
+                        top: (index == 0)
+                            ? BorderSide(color: Theme.of(context).dividerColor)
+                            : BorderSide.none,
+                        bottom:
+                            BorderSide(color: Theme.of(context).dividerColor))),
+                child: InkWell(
+                  onTap: () {
+                    context.router.push(
+                      ChatRoute(
+                        user: userList[index],
+                        allmessages: allMessages,
+                      ),
+                    );
+                  },
+                  child: UserTile(user: userList[index]),
+                ),
               );
             },
           ),
@@ -129,37 +117,49 @@ class HomePageState extends State<HomePage> {
       },
     );
   }
-}
 
-_buildAppBar(BuildContext context) {
-  return PreferredSize(
-    preferredSize: const Size(double.infinity, 40),
-    child: AppBar(
-      title: const Text(
-        "Messenger",
-        style: TextStyle(color: Colors.blueGrey),
-      ),
-      elevation: 0,
-      backgroundColor: Colors.white,
-      actionsIconTheme: const IconThemeData(color: Colors.blueGrey),
-      actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.search,
-          ),
-          onPressed: () {
-            // do something
-          },
+  _buildAppBar(BuildContext context, viewModel) {
+    return PreferredSize(
+      preferredSize: const Size(double.infinity, 40),
+      child: AppBar(
+        title: const Text(
+          "Messenger",
+          style: TextStyle(color: Colors.blueGrey),
         ),
-        IconButton(
-          icon: const Icon(
-            Icons.settings,
-          ),
-          onPressed: () {
-            context.router.push(SettingsRoute());
-          },
-        )
-      ],
-    ),
-  );
+        elevation: 0,
+        actionsIconTheme: const IconThemeData(color: Colors.blueGrey),
+        actions: [
+          PopupMenuButton(
+              icon: const Icon(
+                Icons.more_vert,
+                color: Colors.black,
+              ),
+              itemBuilder: (ctx) => [
+                    _buildPopupItem('search', () {}),
+                    _buildPopupItem('settings', () {
+                      context.router.push(SettingsRoute());
+                    }),
+                    _buildPopupItem('Log out', () async {
+                      // channel.sink.close();
+                      final SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs.setString('token', '');
+                      if (context.mounted) {}
+                      context.router.pushAndPopUntil(
+                        const GoogleSignInRoute(),
+                        predicate: (route) => false,
+                      );
+                    }),
+                  ])
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem _buildPopupItem(String action, VoidCallback onTap) {
+    return PopupMenuItem(
+      onTap: onTap,
+      child: Text(action),
+    );
+  }
 }

@@ -1,13 +1,14 @@
-import 'package:client/pages/chat/chat_view.dart';
 import 'package:flutter/material.dart';
 
+import '../models/message_model.dart';
+
 class Unread extends ChangeNotifier {
-  final List<MessageData> _messages = [];
-  String _currentChat = "";
+  final List<MessageModel> _messages = [];
+  final String _currentChat = "";
   String get currentChat => _currentChat;
-  void set setChat(String chetter) => _currentChat;
-  List<MessageData> get messages => _messages;
-  void addMessages(MessageData message) {
+  set setChat(String chetter) => _currentChat;
+  List<MessageModel> get messages => _messages;
+  void addMessages(MessageModel message) {
     _messages.add(message);
     notifyListeners();
   }

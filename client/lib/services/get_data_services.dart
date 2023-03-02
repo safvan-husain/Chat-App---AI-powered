@@ -33,6 +33,7 @@ class GetDataService {
             var user = User.fromMap(userList.elementAt(i));
             users.add(user);
           }
+          print(users.length);
           Provider.of<ChatListProvider>(context, listen: false).setList(users);
         },
       );

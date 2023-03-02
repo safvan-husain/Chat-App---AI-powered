@@ -59,6 +59,6 @@ router.post('/app-token', authentication_1.auth, (req, res) => __awaiter(void 0,
     }
 }));
 router.get('/sendmessage', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, push_notification_1.sendMessage)({ title: 'heej', body: 'nothing  in here', username: 'husain' });
+    (0, push_notification_1.sendMessage)({ title: 'heej', body: 'husain nothing  in here', username: 'safvanHusian' });
     res.send('mm');
 }));

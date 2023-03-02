@@ -1,6 +1,7 @@
 import * as websocket from "ws";
 import { Message } from "../model/message_model";
 import UserModel from "../model/user_model";
+import { sendMessage } from "./push_notification";
 
 export function onWebSocket(wss: websocket.Server<websocket.WebSocket>) {
   var webSockets: any = {};
@@ -30,6 +31,7 @@ export function onWebSocket(wss: websocket.Server<websocket.WebSocket>) {
         if (data.auth == "chatapphdfgjd34534hjdfk") {
           if (data.cmd == "send") {
             var reciever = webSockets[data.receiverId]; //check if there is reciever connection
+            sendMessage({ title: `Message from ${data.senderId}`, body:data.msgtext,username: data.receiverId})
             if (reciever) {
               var cdata = JSON.stringify({
                 cmd: 'listen',

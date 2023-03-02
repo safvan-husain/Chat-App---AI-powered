@@ -4,6 +4,8 @@ import 'package:client/pages/chat/chat_view.dart';
 import 'package:client/pages/home/home_view.dart';
 import 'package:client/pages/splash/splash_page.dart';
 
+import '../pages/authentication/google/google_sign_in.dart';
+import '../pages/authentication/google/google_sign_up.dart';
 import '../pages/authentication/sign_up/sign_up_screen.dart';
 import '../pages/profile/avatar/avatar.dart';
 import '../pages/profile/profile_view.dart';
@@ -12,7 +14,7 @@ import '../pages/settings/settings_view.dart';
 @AdaptiveAutoRouter(
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
-    AutoRoute(page: SplashPage, initial: true),
+    AutoRoute(page: SplashPage),
     AutoRoute(page: SignInPage),
     AutoRoute(page: SignUpPage),
     AutoRoute(page: HomePage),
@@ -20,6 +22,8 @@ import '../pages/settings/settings_view.dart';
     AutoRoute(page: ChatPage),
     AutoRoute(page: SettingsPage),
     AutoRoute(page: ProfilePage),
+    AutoRoute(page: GoogleSignUpPage),
+    AutoRoute(page: GoogleSignInPage, initial: true),
   ],
 )
 class $AppRouter {}

@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../local_database/message_schema.dart';
+import '../models/message_model.dart';
 import '../routes/router.gr.dart';
 
 class AuthServices {
@@ -84,7 +85,73 @@ class AuthServices {
           late AppDatabase database =
               Provider.of<AppDatabase>(context, listen: false);
           for (var message in messages) {
-            MessageData msgData = MessageData(
+            MessageModel msgData = MessageModel(
+                sender: message['senderId'],
+                isread: message['isRead'],
+                time: DateTime.parse(message['createdAt']),
+                isme: false,
+                msgtext: message['msgText']);
+            Provider.of<Unread>(context, listen: false).addMessages(msgData);
+            await database
+                .into(database.messages)
+                .insert(MessagesCompanion.insert(
+                  senderId: msgData.sender,
+                  receiverId: user.username,
+                  content: msgData.msgtext,
+                  isRead: msgData.isread,
+                  time: msgData.time,
+                ));
+          }
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', jsonDecode(response.body)['token']);
+          if (context.mounted) {
+            Provider.of<UserProvider>(context, listen: false).setUser(user);
+            context.router.pushAndPopUntil(
+              const HomeRoute(),
+              predicate: (route) => false,
+            );
+          }
+          var token = await getFirebaseToken();
+          http.Response res = await http.post(
+            Uri.parse('$uri/app-token'),
+            headers: <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+              'x-auth-token': jsonDecode(response.body)['token'],
+            },
+            body: jsonEncode({'app_token': token}),
+          );
+        },
+      );
+    }
+  }
+
+  void loginWithGoogle({
+    required BuildContext context,
+    required String email,
+  }) async {
+    log('login serv');
+    http.Response response = await http.post(
+      Uri.parse('$uri/auth/google-in'),
+      headers: <String, String>{
+        'content-type': 'application/json; charset=utf-8',
+        'x-auth-token': '',
+      },
+      body: jsonEncode({
+        'email': email,
+      }),
+    );
+    if (context.mounted) {
+      httpErrorHandler(
+        context: context,
+        response: response,
+        onSuccess: () async {
+          var user = User.fromMap(jsonDecode(response.body)['user']);
+          List<dynamic> messages =
+              jsonDecode(response.body)['user']['messages'];
+          late AppDatabase database =
+              Provider.of<AppDatabase>(context, listen: false);
+          for (var message in messages) {
+            MessageModel msgData = MessageModel(
                 sender: message['senderId'],
                 isread: message['isRead'],
                 time: DateTime.parse(message['createdAt']),
@@ -148,7 +215,7 @@ class AuthServices {
           var user = User.fromJson(response.body);
           Provider.of<UserProvider>(context, listen: false).setUser(user);
           for (var message in messages) {
-            MessageData msgData = MessageData(
+            MessageModel msgData = MessageModel(
                 sender: message['senderId'],
                 isread: message['isRead'],
                 time: DateTime.parse(message['createdAt']),
